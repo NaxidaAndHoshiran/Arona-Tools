@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
+
+    id 'net.mamoe.mirai-console' version '2.16.0'
+}
+
+group = "cn.travellerr"
+version = "0.1.0"
+
+repositories {
+    maven {url "https://maven.aliyun.com/repository/public"}
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "cn.chahuyun:HuYanEconomy:latest.release"
+    compileOnly(files('./libs/Favorability.mirai2.jar'))
+}
+
+
+mirai {
+    jvmTarget JavaVersion.VERSION_11
+}

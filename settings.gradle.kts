@@ -1,1 +1,1 @@
-rootProject.name = "Arona-AutoAcceptInvite"
+rootProject.name = "Arona-Tools"

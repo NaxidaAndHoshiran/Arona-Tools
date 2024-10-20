@@ -1,4 +1,4 @@
-package cn.travellerr.checkPerm;
+package cn.travellerr.aronaTools.autoAcceptInvite;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.utils.SqlUtil;
@@ -6,24 +6,28 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.data.RequestEventData;
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent;
-import net.mamoe.mirai.message.data.At;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Check {
+import static cn.travellerr.aronaTools.AronaTools.config;
+
+public class CheckInvite {
     private static boolean checkMoney(User user) {
-        return EconomyUtil.getMoneyByUser(user) >= 300;
+        return EconomyUtil.getMoneyByUser(user) >= config.getMoney();
     }
 
     private static boolean checkLove(User user) {
-        SqlUtil.getExp(user.getId());
-        return SqlUtil.getExp(user.getId()) >= 200;
+        try {
+            SqlUtil.getExp(user.getId());
+            return SqlUtil.getExp(user.getId()) >= config.getLove();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private static ArrayList<Boolean> checkIsInGroup(Bot bot, User user, Group ARONA, Group Hoshiran) {
+    private static ArrayList<Boolean> checkIsInGroup(User user, Group ARONA, Group Hoshiran) {
         ArrayList<Boolean> result = new ArrayList<>();
         result.add(false);
         result.add(false);
@@ -45,23 +49,26 @@ public class Check {
     public static void check(BotInvitedJoinGroupRequestEvent event) {
         long userId = event.getInvitorId();
         Bot bot = event.getBot();
-        User user = bot.getStranger(userId) == null ? bot.getFriend(userId) : null;
+        User user = bot.getStranger(userId);
+        if (user == null) {
+            user = bot.getFriend(userId);
+        }
         assert user != null;
         boolean isMoneyEnough = checkMoney(user);
         boolean isLoveEnough = checkLove(user);
 
-        Group ARONA = bot.getGroup(626860767L);
-        Group Hoshiran = bot.getGroup(970271300L);
+        Group ARONA = bot.getGroup(config.getGroup().get(0));
+        Group Hoshiran = bot.getGroup(config.getGroup().get(1));
 
         assert ARONA != null && Hoshiran != null;
 
-        ArrayList<Boolean> isInOneOfGroup = checkIsInGroup(bot, user, ARONA, Hoshiran);
+        ArrayList<Boolean> isInOneOfGroup = checkIsInGroup(user, ARONA, Hoshiran);
 
         boolean isInGroup = isInOneOfGroup.get(0) || isInOneOfGroup.get(1);
 
         boolean isAccept = false;
         if (isMoneyEnough && isLoveEnough && isInGroup) {
-            EconomyUtil.plusMoneyToUser(user, -300);
+            EconomyUtil.plusMoneyToUser(user, -config.getMoney());
             event.accept();
             isAccept = true;
         } else {
@@ -70,6 +77,16 @@ public class Check {
 
         User owner = bot.getFriend(3132522039L);
         assert owner != null;
+
+        String moneyMsg = "金币数量(使用#个人信息 查看) >= 300 (目前 %金币%)";
+
+        String loveMsg = "好感经验(使用#好感度 查看) >= 380 (目前 %好感度% 经验)";
+
+        String groupMsg = "尝试加入 什亭之匣群聊(626860767)";
+
+        String tryMsg = (isMoneyEnough ? "" : (replaceVar(moneyMsg, "金币", EconomyUtil.getMoneyByUser(user)) + "\n"))
+                + (isLoveEnough ? "" : (replaceVar(loveMsg, "好感度", SqlUtil.getExp(userId)) + "\n"))
+                + (isInGroup ? "" : (groupMsg + "\n"));
 
         String BotVerifyMsg = (isAccept ? "通过" : ("未通过" + "审核"
                 + "\n" + "原因: " + (isMoneyEnough ? "" : "余额不足 ") + (isLoveEnough ? "" : "好感不足 ") + (isInGroup ? "" : "不在群聊中 ")
@@ -81,12 +98,16 @@ public class Check {
 
         user.sendMessage("你邀请" + bot.getNick() +
                 "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n"
-                + BotVerifyMsg);
+                + BotVerifyMsg+"\n 请尝试以下方法: \n" + tryMsg);
 
         Group group = isInOneOfGroup.get(0) ? ARONA : (isInOneOfGroup.get(1) ? Hoshiran : null);
 
         Objects.requireNonNullElse(group, Hoshiran).sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
                 "加入群聊\n"
                 + BotVerifyMsg);
+    }
+
+    public static String replaceVar(String msg, String varName, Object value) {
+        return msg.replace("%" + varName + "%", value.toString());
     }
 }

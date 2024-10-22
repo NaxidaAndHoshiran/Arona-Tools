@@ -1,8 +1,8 @@
 package cn.travellerr.aronaTools;
 
 import cn.travellerr.aronaTools.autoAcceptInvite.CheckInvite;
-import cn.travellerr.aronaTools.config.Config;
 import cn.travellerr.aronaTools.command.RegCommand;
+import cn.travellerr.aronaTools.config.Config;
 import cn.travellerr.aronaTools.permission.PermissionController;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -33,7 +33,11 @@ public final class AronaTools extends JavaPlugin {
         getLogger().info("插件已加载");
         RegCommand.INSTANCE.registerCommand();
         PermissionController.INSTANCE.regPerm();
+
     }
 }
+
+
+
 
 

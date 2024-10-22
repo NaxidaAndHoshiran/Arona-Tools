@@ -1,8 +1,10 @@
 package cn.travellerr.aronaTools.autoAcceptInvite;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
+import cn.travellerr.aronaTools.permission.PermissionController;
 import cn.travellerr.utils.SqlUtil;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.console.permission.PermissionService;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
@@ -50,10 +52,26 @@ public class CheckInvite {
         long userId = event.getInvitorId();
         Bot bot = event.getBot();
         User user = bot.getStranger(userId);
+        boolean isAccept = false;
         if (user == null) {
             user = bot.getFriend(userId);
         }
         assert user != null;
+
+        User owner = bot.getFriend(3132522039L);
+        assert owner != null;
+
+        if (PermissionService.hasPermission(PermissionController.getUserPermittee(user), PermissionController.inviteBypassPermission)) {
+            event.accept();
+
+            owner.sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
+                    "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n");
+
+            user.sendMessage("你邀请" + bot.getNick() +
+                    "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n");
+            return;
+
+        }
         boolean isMoneyEnough = checkMoney(user);
         boolean isLoveEnough = checkLove(user);
 
@@ -66,17 +84,16 @@ public class CheckInvite {
 
         boolean isInGroup = isInOneOfGroup.get(0) || isInOneOfGroup.get(1);
 
-        boolean isAccept = false;
+
         if (isMoneyEnough && isLoveEnough && isInGroup) {
             EconomyUtil.plusMoneyToUser(user, -config.getMoney());
             event.accept();
             isAccept = true;
         } else {
             event.ignore();
+
         }
 
-        User owner = bot.getFriend(3132522039L);
-        assert owner != null;
 
         String moneyMsg = "金币数量(使用#个人信息 查看) >= 300 (目前 %金币%)";
 
@@ -90,7 +107,7 @@ public class CheckInvite {
 
         String BotVerifyMsg = (isAccept ? "通过" : ("未通过" + "审核"
                 + "\n" + "原因: " + (isMoneyEnough ? "" : "余额不足 ") + (isLoveEnough ? "" : "好感不足 ") + (isInGroup ? "" : "不在群聊中 ")
-                + "未通过审核"));
+                + "未通过审核\n请尝试以下方法: \n" + tryMsg));
 
         owner.sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
                 "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n"
@@ -98,7 +115,7 @@ public class CheckInvite {
 
         user.sendMessage("你邀请" + bot.getNick() +
                 "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n"
-                + BotVerifyMsg+"\n 请尝试以下方法: \n" + tryMsg);
+                + BotVerifyMsg);
 
         Group group = isInOneOfGroup.get(0) ? ARONA : (isInOneOfGroup.get(1) ? Hoshiran : null);
 

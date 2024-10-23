@@ -4,6 +4,7 @@ import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.permission.PermissionController;
 import cn.travellerr.utils.SqlUtil;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.console.permission.AbstractPermitteeId;
 import net.mamoe.mirai.console.permission.PermissionService;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
@@ -61,7 +62,8 @@ public class CheckInvite {
         User owner = bot.getFriend(3132522039L);
         assert owner != null;
 
-        if (PermissionService.hasPermission(PermissionController.getUserPermittee(user), PermissionController.inviteBypassPermission)) {
+        AbstractPermitteeId.ExactUser exactUser = PermissionController.getUserPermittee(user);
+        if (exactUser != null && PermissionService.hasPermission(exactUser, PermissionController.inviteBypassPermission)) {
             event.accept();
 
             owner.sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +

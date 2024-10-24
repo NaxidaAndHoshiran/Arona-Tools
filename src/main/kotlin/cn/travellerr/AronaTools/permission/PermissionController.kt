@@ -20,8 +20,8 @@ object PermissionController {
     }
 
     @JvmStatic
-    fun getUserPermittee(user: User): AbstractPermitteeId.ExactUser {
-        return user.permitteeId
+    fun getUserPermittee(user: User?): AbstractPermitteeId.ExactUser? {
+        return user?.permitteeId
     }
 
 }

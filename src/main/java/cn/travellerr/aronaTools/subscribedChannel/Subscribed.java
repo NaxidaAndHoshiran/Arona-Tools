@@ -1,11 +1,11 @@
 package cn.travellerr.aronaTools.subscribedChannel;
 
 import cn.travellerr.aronaTools.AronaTools;
-import cn.travellerr.aronaTools.command.CommandException;
-import cn.travellerr.aronaTools.command.GivePerm;
+import cn.travellerr.aronaTools.permission.CommandException;
+import cn.travellerr.aronaTools.permission.GivePerm;
 import cn.travellerr.aronaTools.permission.PermissionController;
-import net.mamoe.mirai.console.command.*;
-import net.mamoe.mirai.console.permission.*;
+import net.mamoe.mirai.console.command.CommandManager;
+import net.mamoe.mirai.console.permission.PermissionService;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.At;

@@ -2,7 +2,8 @@ package cn.travellerr.aronaTools.autoAcceptInvite;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.permission.PermissionController;
-import cn.travellerr.utils.SqlUtil;
+import cn.travellerr.entity.Favourite;
+import cn.travellerr.utils.FavouriteManager;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.permission.AbstractPermitteeId;
 import net.mamoe.mirai.console.permission.PermissionService;
@@ -23,8 +24,8 @@ public class CheckInvite {
 
     private static boolean checkLove(User user) {
         try {
-            SqlUtil.getExp(user.getId());
-            return SqlUtil.getExp(user.getId()) >= config.getLove();
+            Favourite favourite = FavouriteManager.getInfo(user.getId());
+            return favourite.getExp() >= config.getLove();
         } catch (Exception e) {
             return false;
         }
@@ -104,7 +105,7 @@ public class CheckInvite {
         String groupMsg = "尝试加入 什亭之匣群聊(626860767)";
 
         String tryMsg = (isMoneyEnough ? "" : (replaceVar(moneyMsg, "金币", EconomyUtil.getMoneyByUser(user)) + "\n"))
-                + (isLoveEnough ? "" : (replaceVar(loveMsg, "好感度", SqlUtil.getExp(userId)) + "\n"))
+                + (isLoveEnough ? "" : (replaceVar(loveMsg, "好感度", FavouriteManager.getInfo(userId).getExp()) + "\n"))
                 + (isInGroup ? "" : (groupMsg + "\n"));
 
         String BotVerifyMsg = (isAccept ? "通过" : ("未通过" + "审核"

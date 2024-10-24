@@ -4,6 +4,7 @@ import cn.travellerr.aronaTools.autoAcceptInvite.CheckInvite;
 import cn.travellerr.aronaTools.command.RegCommand;
 import cn.travellerr.aronaTools.config.Config;
 import cn.travellerr.aronaTools.permission.PermissionController;
+import cn.travellerr.aronaTools.shareTools.HibernateUtil;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.GlobalEventChannel;
@@ -29,6 +30,7 @@ public final class AronaTools extends JavaPlugin {
         reloadPluginConfig(Config.INSTANCE);
         config = Config.INSTANCE;
 
+        HibernateUtil.init(this);
 
         getLogger().info("插件已加载");
         RegCommand.INSTANCE.registerCommand();

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "cn.travellerr"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     maven {url "https://maven.aliyun.com/repository/public"}
@@ -16,6 +16,7 @@ repositories {
 dependencies {
     implementation 'org.projectlombok:lombok:1.18.28'
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    implementation 'cn.hutool:hutool-all:5.8.25'
     compileOnly "cn.chahuyun:HuYanEconomy:latest.release"
     compileOnly(files('./libs/Favorability.mirai2.jar'))
 

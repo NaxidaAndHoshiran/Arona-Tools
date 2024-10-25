@@ -64,14 +64,16 @@ object GetEcho : SimpleCommand(AronaTools.INSTANCE,"getEcho",
         val subject = context.sender.subject!!
         val user = context.sender.user!!
 
+        val originMessage = context.originalMessage
+
         val id = args.getOrNull(0)?.toLongOrNull()
         if (args.isEmpty()) {
-            EchoManager.getRandomEcho(subject, user)
+            EchoManager.getRandomEcho(subject, user, originMessage)
             return
         }
 
         if (id is Long) {
-            EchoManager.getDesignatedEcho(subject, user, id)
+            EchoManager.getDesignatedEcho(subject, user, id, originMessage)
             return
         }
 
@@ -128,5 +130,16 @@ object GetReportEcho : SimpleCommand(AronaTools.INSTANCE,"getReportEcho",
         val subject = context.sender.subject!!
         val user = context.sender.user!!
         EchoManager.getReportedEcho(subject, user)
+    }
+}
+
+object GetMyEchoList : SimpleCommand(AronaTools.INSTANCE,"getMyEchoList",
+    "回声列表", "回声洞列表",
+    description = "获取回声列表") {
+    @Handler
+    fun echo(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+        EchoManager.getMyEchoList(subject, user)
     }
 }

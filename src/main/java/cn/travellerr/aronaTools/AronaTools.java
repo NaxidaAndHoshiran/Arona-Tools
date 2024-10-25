@@ -16,7 +16,7 @@ public final class AronaTools extends JavaPlugin {
     public static Config config;
 
     private AronaTools() {
-        super(new JvmPluginDescriptionBuilder("cn.travellerr.aronaTools.AronaTools", "0.1.0")
+        super(new JvmPluginDescriptionBuilder("cn.travellerr.aronaTools.AronaTools", "0.2.0")
                 .name("AronaTools")
                 .author("Travellerr")
                 .dependsOn("cn.chahuyun.HuYanEconomy", true)

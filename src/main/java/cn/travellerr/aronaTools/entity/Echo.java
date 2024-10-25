@@ -1,6 +1,8 @@
 package cn.travellerr.aronaTools.entity;
 
 import cn.chahuyun.hibernateplus.HibernateFactory;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,11 +45,11 @@ public class Echo {
     private Boolean isReported = false; // 是否被举报
 
     public String buildMessage() {
-        return "回声洞ID: " + this.id + "\n\n" +
+        return "回声洞ID: " + this.id + "\n" +
                 this.message + "\n" +
                 "by " + this.userName + " (" + this.userId + ")\n" +
-                "创建时间: " + this.createTime + "\n" +
-                "回声次数: " + this.readTimes + "\n";
+                "回声次数: " + this.readTimes + "\n" +
+                "创建时间: " + DateUtil.format(this.createTime, DatePattern.NORM_DATETIME_PATTERN);
     }
 
     public void addReadTimes() {

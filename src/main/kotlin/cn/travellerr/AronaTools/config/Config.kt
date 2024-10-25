@@ -18,6 +18,12 @@ object Config : AutoSavePluginConfig("config") {
     @ValueDescription("兑换码验证链接")
     var url: String by value()
 
+    @ValueDescription("添加回声所需好感等级")
+    var echoFavorLevel: Int by value(3)
+
+    @ValueDescription("添加回声所需金币")
+    var echoMoney: Int by value(50)
+
     @ValueDescription("数据库类型(H2,MYSQL,SQLITE)")
     var dataType: DriveType by value(DriveType.H2)
 

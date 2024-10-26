@@ -3,11 +3,12 @@ package cn.travellerr.aronaTools.command
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.echoCaves.EchoManager
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
-import net.mamoe.mirai.console.command.CommandContext
-import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.QuoteReply
+import net.mamoe.mirai.message.data.content
 
 object CheckKey  :
     SimpleCommand(AronaTools.INSTANCE as CommandOwner, "认证", "认证发电用户") {
@@ -40,19 +41,32 @@ object CreateEcho : SimpleCommand(AronaTools.INSTANCE,"createEcho",
             return
         }
 
-        val wholeMessage = msg.joinToString(" ")
+        var originMsg : String = context.originalMessage.content.trim()
+        val prefix = originMsg.split(" ")[0]
+        originMsg = originMsg.removePrefix(prefix).trim()
 
-        if (wholeMessage.length > 600) {
+        if (originMsg.matches("\\d+".toRegex())) {
+            subject.sendMessage("回声内容不能全为数字!\n你是否要使用 \"" + CommandManager.commandPrefix + "回声洞 [回声ID]\"?")
+            return
+        }
+
+        val image = context.originalMessage.filterIsInstance<Image>().firstOrNull()
+        if (image != null) {
+            subject.sendMessage(QuoteReply(context.originalMessage).plus("回声洞目前不支持图片消息哦~\n").plus(image))
+            return
+        }
+
+        if (!AronaTools.config.ignoreUserEchoList.contains(user.id) && originMsg.length > 600) {
             subject.sendMessage("回声内容过长，请控制在600字以内")
             return
         }
 
         if (subject is Group) {
-            EchoManager.createEcho(subject, user, wholeMessage, subject)
+            EchoManager.createEcho(subject, user, originMsg, subject)
             return
         }
 
-        EchoManager.createEcho(subject, user, wholeMessage)
+        EchoManager.createEcho(subject, user, originMsg)
     }
 }
 
@@ -79,7 +93,8 @@ object GetEcho : SimpleCommand(AronaTools.INSTANCE,"getEcho",
 
         val originMsg = context.originalMessage[1]
         val prefix = originMsg.toString().split(" ")[0]
-        subject.sendMessage("请使用 \"$prefix [回声ID]\"获取回声，不要加括号，ID为从1开始的正整数数字")
+        subject.sendMessage("请使用 \"$prefix [回声ID]\"获取回声，不要加括号，ID为从1开始的正整数数字\n你是否要使用 \""
+            + CommandManager.commandPrefix + "添加回声 [回声内容]\"?")
     }
 }
 
@@ -98,7 +113,8 @@ object DeleteEcho : SimpleCommand(AronaTools.INSTANCE,"deleteEcho",
 
         val originMsg = context.originalMessage[1]
         val prefix = originMsg.toString().split(" ")[0]
-        subject.sendMessage("请使用 \"$prefix [回声ID]\"删除回声，不要加括号，ID为从1开始的正整数数字")
+        subject.sendMessage("请使用 \"$prefix [回声ID]\"删除回声，不要加括号，ID为从1开始的正整数数字\n你是否要使用 \""
+            + CommandManager.commandPrefix + "添加回声 [回声内容]\"?")
     }
 }
 
@@ -118,7 +134,8 @@ object ReportEcho : SimpleCommand(AronaTools.INSTANCE,"reportEcho",
 
         val originMsg = context.originalMessage[1]
         val prefix = originMsg.toString().split(" ")[0]
-        subject.sendMessage("请使用 \"$prefix [回声ID]\"举报回声，不要加括号，ID为从1开始的正整数数字")
+        subject.sendMessage("请使用 \"$prefix [回声ID]\"举报回声，不要加括号，ID为从1开始的正整数数字\n你是否要使用 \""
+            + CommandManager.commandPrefix + "添加回声 [回声内容]\"?")
     }
 }
 
@@ -142,4 +159,36 @@ object GetMyEchoList : SimpleCommand(AronaTools.INSTANCE,"getMyEchoList",
         val user = context.sender.user!!
         EchoManager.getMyEchoList(subject, user)
     }
+}
+
+object VerifyEcho :CompositeCommand(AronaTools.INSTANCE,"verifyEcho",
+    "审核回声", "审核回声洞",
+    description = "审核回声") {
+
+    @SubCommand("通过", "通过回声", "通过回声洞")
+    fun approve(context: CommandContext, id: Long) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        EchoManager.approveEcho(subject, user, id)
+        return
+    }
+
+    @SubCommand("拒绝", "拒绝回声", "拒绝回声洞")
+    fun reject(context: CommandContext, id: Long) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        EchoManager.rejectEcho(subject, user, id)
+        return
+    }
+
+    @SubCommand("获取", "获取回声", "获取回声洞", "获取被举报回声", "获取被举报回声洞")
+    fun getReportedEcho(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+        EchoManager.getReportedEcho(subject, user)
+    }
+
+
 }

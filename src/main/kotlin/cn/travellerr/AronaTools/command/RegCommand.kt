@@ -11,5 +11,6 @@ object RegCommand {
         CommandManager.registerCommand(ReportEcho)
         CommandManager.registerCommand(GetReportEcho)
         CommandManager.registerCommand(GetMyEchoList)
+        CommandManager.registerCommand(VerifyEcho)
     }
 }

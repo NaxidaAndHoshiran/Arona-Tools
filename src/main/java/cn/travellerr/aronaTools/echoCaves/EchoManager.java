@@ -30,15 +30,20 @@ public class EchoManager {
      */
     public static void createEcho (Contact subject, User user, String message, Group group) {
         String userName = user.getNick();
-        long userId = user.getId();
         String groupName = group.getName();
         long groupId = group.getId();
+        long userId = user.getId();
 
-        if (isInfoFailed(subject, user)) {
+        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()*2);
+
+        if (isInfoFailed(subject, user, needMoney)) {
             return;
         }
 
+        Long id = HibernateFactory.selectList(Echo.class).stream().map(Echo::getId).max(Long::compareTo).orElse(0L) + 1;
+
         Echo echo = Echo.builder()
+                .id(id)
                 .userId(userId)
                 .userName(userName)
                 .message(message)
@@ -46,11 +51,12 @@ public class EchoManager {
                 .groupName(groupName)
                 .build();
 
-        Log.info("用户 " + userName + " 的回声创建成功! ");
-
         echo = HibernateFactory.merge(echo);
 
-        subject.sendMessage(new At(userId).plus("\n回声创建成功! ID: " + echo.getId()));
+        Log.info("用户 " + userName + " 的回声创建成功! 消耗" + needMoney + "金币");
+
+
+        subject.sendMessage(new At(userId).plus("\n回声创建成功! ID: " + echo.getId() + "\n消耗" + needMoney + "金币"));
     }
 
     /**
@@ -65,21 +71,27 @@ public class EchoManager {
         String userName = user.getNick();
         long userId = user.getId();
 
-        if (isInfoFailed(subject, user)) {
+        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()*2);
+
+        if (isInfoFailed(subject, user, needMoney)) {
             return;
         }
 
+        Long id = HibernateFactory.selectList(Echo.class).stream().map(Echo::getId).max(Long::compareTo).orElse(0L) + 1;
+
         Echo echo = Echo.builder()
+                .id(id)
                 .userId(userId)
                 .userName(userName)
                 .message(message)
                 .build();
 
-        Log.info("用户 " + userName + " 的回声创建成功! ");
+        echo = HibernateFactory.merge(echo);
 
-        HibernateFactory.merge(echo);
+        Log.info("用户 " + userName + " 的回声创建成功! 消耗" + needMoney + "金币");
 
-        subject.sendMessage(new PlainText("回声创建成功! ID: " + echo.getId()));
+
+        subject.sendMessage(new PlainText("回声创建成功! ID: " + echo.getId() + "\n消耗" + needMoney + "金币"));
 
     }
 
@@ -122,7 +134,10 @@ public class EchoManager {
      */
     public static void getRandomEcho (Contact subject, User user, MessageChain originalMessage) {
 
-        Echo echo = HibernateFactory.selectList(Echo.class).get((int) (Math.random() * HibernateFactory.selectList(Echo.class).size()));
+        Echo echo = HibernateFactory.selectList(Echo.class)
+                .stream().filter(Echo::getIsApproved).filter(echo1 -> !echo1.getIsReported())
+                .collect(Collectors.toList())
+                .get((int) (Math.random() * HibernateFactory.selectList(Echo.class).size()));
         if (echo == null) {
             Log.error("回声不存在! ");
             subject.sendMessage(new At(user.getId()).plus(" 出错啦~回声不存在"));
@@ -130,7 +145,7 @@ public class EchoManager {
         }
 
         echo.addReadTimes();
-        subject.sendMessage(new QuoteReply(originalMessage).plus("\n" + echo.buildMessage()));
+        subject.sendMessage(new QuoteReply(originalMessage).plus(new PlainText(echo.buildMessage())));
     }
 
     /**
@@ -150,9 +165,19 @@ public class EchoManager {
             subject.sendMessage(new At(user.getId()).plus(" 出错啦~回声" + id + "不存在"));
             return;
         }
+        if (echo.getIsReported()) {
+            Log.error("回声被举报! ");
+            subject.sendMessage(new At(user.getId()).plus(" 回声" + id + "被举报，无法查看!"));
+            return;
+        }
+        if (!echo.getIsApproved()) {
+            Log.error("回声未审核通过! ");
+            subject.sendMessage(new At(user.getId()).plus(" 回声" + id + "未审核通过，无法查看!"));
+            return;
+        }
 
         echo.addReadTimes();
-        subject.sendMessage(new QuoteReply(originalMessage).plus("\n" + echo.buildMessage()));
+        subject.sendMessage(new QuoteReply(originalMessage).plus(new PlainText(echo.buildMessage())));
     }
 
     /**
@@ -205,6 +230,36 @@ public class EchoManager {
         subject.sendMessage(builder.build());
     }
 
+    public static void approveEcho (Contact subject, User user, Long id) {
+        Echo echo = HibernateFactory.selectOne(Echo.class, id);
+        if (echo == null) {
+            Log.error("回声不存在! ");
+            subject.sendMessage(new At(user.getId()).plus(" 出错啦~回声" + id + "不存在"));
+            return;
+        }
+
+        echo.setIsApproved(true);
+        echo.setIsReported(false);
+        HibernateFactory.merge(echo);
+        Log.info("回声" + id + "审核通过! ");
+        subject.sendMessage(new At(user.getId()).plus("回声" + id + "审核通过! "));
+    }
+
+    public static void rejectEcho (Contact subject, User user, Long id) {
+        Echo echo = HibernateFactory.selectOne(Echo.class, id);
+        if (echo == null) {
+            Log.error("回声不存在! ");
+            subject.sendMessage(new At(user.getId()).plus(" 出错啦~回声" + id + "不存在"));
+            return;
+        }
+
+        echo.setIsApproved(false);
+        echo.setIsReported(false);
+        HibernateFactory.merge(echo);
+        Log.info("回声" + id + "审核未通过! ");
+        subject.sendMessage(new At(user.getId()).plus("回声" + id + "审核未通过! "));
+    }
+
     /**
      * 获取用户的回声列表并发送。
      *
@@ -239,10 +294,9 @@ public class EchoManager {
      * @param user 用户对象
      * @return 如果信息不符合条件，返回 true；否则返回 false
      */
-    private static boolean isInfoFailed(Contact subject, User user) {
+    private static boolean isInfoFailed(Contact subject, User user, int needMoney) {
         long userId = user.getId();
 
-        int needMoney = AronaTools.config.getEchoMoney();
         int needFavorLevel = AronaTools.config.getEchoFavorLevel();
 
         if (EconomyUtil.getMoneyByUser(user) < needMoney) {

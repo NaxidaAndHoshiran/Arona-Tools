@@ -3,7 +3,10 @@ package cn.travellerr.aronaTools.entity;
 import cn.chahuyun.hibernateplus.HibernateFactory;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.util.Date;
@@ -17,13 +20,14 @@ import java.util.Date;
 @NoArgsConstructor
 public class Echo {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;            // 回声洞ID
 
     private Long userId;        // 用户QQ号码
 
     private String userName;    // 用户昵称
 
+    @Column(length = 2048)
     private String message;     // 消息内容
 
     @Builder.Default

@@ -6,6 +6,9 @@ import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 
 object Config : AutoSavePluginConfig("config") {
+    @ValueDescription("回声洞忽略限制用户列表")
+    var ignoreUserEchoList: List<Long> by value(listOf(3132522039))
+
     @ValueDescription("自动审核所需金币")
     var money: Int by value(300)
 

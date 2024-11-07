@@ -2,6 +2,7 @@ package cn.travellerr.aronaTools.autoAcceptInvite;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.permission.PermissionController;
+import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.entity.Favourite;
 import cn.travellerr.utils.FavouriteManager;
 import net.mamoe.mirai.Bot;
@@ -25,7 +26,7 @@ public class CheckInvite {
     private static boolean checkLove(User user) {
         try {
             Favourite favourite = FavouriteManager.getInfo(user.getId());
-            return favourite.getExp() >= config.getLove();
+            return favourite != null && favourite.getExp() >= config.getLove();
         } catch (Exception e) {
             return false;
         }
@@ -58,20 +59,30 @@ public class CheckInvite {
         if (user == null) {
             user = bot.getFriend(userId);
         }
-        assert user != null;
 
         User owner = bot.getFriend(3132522039L);
         assert owner != null;
 
+        if (user == null) {
+
+            Log.info("用户邀请机器人加入群聊，获取用户信息为空，拒绝");
+            owner.sendMessage("用户 " + userId + " 邀请" + bot.getNick() +
+                    "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n" + "由于获取不到该用户信息，已拒绝");
+            event.ignore();
+            return;
+        }
+
         AbstractPermitteeId.ExactUser exactUser = PermissionController.getUserPermittee(user);
         if (exactUser != null && PermissionService.hasPermission(exactUser, PermissionController.inviteBypassPermission)) {
             event.accept();
+            Log.info("用户邀请机器人加入群聊，已通过权限检查，已接受");
 
             owner.sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
                     "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n");
 
             user.sendMessage("你邀请" + bot.getNick() +
                     "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n");
+
             return;
 
         }
@@ -111,6 +122,10 @@ public class CheckInvite {
         String BotVerifyMsg = (isAccept ? "通过" : ("未通过" + "审核"
                 + "\n" + "原因: " + (isMoneyEnough ? "" : "余额不足 ") + (isLoveEnough ? "" : "好感不足 ") + (isInGroup ? "" : "不在群聊中 ")
                 + "未通过审核\n请尝试以下方法: \n" + tryMsg));
+
+        Log.info("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
+                "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n"
+                + BotVerifyMsg);
 
         owner.sendMessage("用户 " + user.getNick() + " (" + user.getId() + ") 邀请" + bot.getNick() +
                 "加入群聊" + event.getGroupName() + " (" + event.getGroupId() + ") " + "\n"

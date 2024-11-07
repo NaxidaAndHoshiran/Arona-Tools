@@ -1,12 +1,12 @@
 package cn.travellerr.aronaTools.shareTools;
 
-import cn.travellerr.Favorability;
+import cn.travellerr.aronaTools.AronaTools;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
 
 public class Log {
-    private static final MiraiLogger log = Favorability.INSTANCE.getLogger();
+    private static final MiraiLogger log = AronaTools.INSTANCE.getLogger();
 
     public static void info(Object msg) {
         log.info(String.valueOf(msg));

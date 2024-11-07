@@ -6,6 +6,9 @@ import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 
 object Config : AutoSavePluginConfig("config") {
+    @ValueDescription("回声洞冷却时间(秒)")
+    var echoCoolDown: Long by value(60L)
+
     @ValueDescription("回声洞忽略限制用户列表")
     var ignoreUserEchoList: List<Long> by value(listOf(3132522039))
 

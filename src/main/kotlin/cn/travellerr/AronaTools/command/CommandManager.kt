@@ -50,6 +50,11 @@ object CreateEcho : SimpleCommand(AronaTools.INSTANCE,"createEcho",
             return
         }
 
+        if (originMsg.replace(Regex("[\\p{Punct}\\s]"), "").matches("\\d{4,}".toRegex())) {
+            subject.sendMessage("为了避免宣传可能，回声内容不能包含4位以上的数字!\n你是否要使用 \"" + CommandManager.commandPrefix + "回声洞 [回声ID]\"?")
+            return
+        }
+
         val image = context.originalMessage.filterIsInstance<Image>().firstOrNull()
         if (image != null) {
             subject.sendMessage(QuoteReply(context.originalMessage).plus("回声洞目前不支持图片消息哦~\n").plus(image))
@@ -139,17 +144,6 @@ object ReportEcho : SimpleCommand(AronaTools.INSTANCE,"reportEcho",
     }
 }
 
-object GetReportEcho : SimpleCommand(AronaTools.INSTANCE,"getReportEcho",
-    "获取举报回声", "获取举报回声洞",
-    description = "获取举报回声") {
-    @Handler
-    fun echo(context: CommandContext) {
-        val subject = context.sender.subject!!
-        val user = context.sender.user!!
-        EchoManager.getReportedEcho(subject, user)
-    }
-}
-
 object GetMyEchoList : SimpleCommand(AronaTools.INSTANCE,"getMyEchoList",
     "回声列表", "回声洞列表",
     description = "获取回声列表") {
@@ -162,7 +156,7 @@ object GetMyEchoList : SimpleCommand(AronaTools.INSTANCE,"getMyEchoList",
 }
 
 object VerifyEcho :CompositeCommand(AronaTools.INSTANCE,"verifyEcho",
-    "审核回声", "审核回声洞",
+    "审核回声", "审核回声洞", "审核",
     description = "审核回声") {
 
     @SubCommand("通过", "通过回声", "通过回声洞")

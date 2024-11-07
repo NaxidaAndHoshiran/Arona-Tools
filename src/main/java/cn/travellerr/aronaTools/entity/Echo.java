@@ -51,7 +51,8 @@ public class Echo {
     public String buildMessage() {
         return "回声洞ID: " + this.id + "\n" +
                 this.message + "\n" +
-                "by " + this.userName + " (" + this.userId + ")\n" +
+                "by " + this.userName /*+ " (" + this.userId + ")*/
+                + "\n" +
                 "回声次数: " + this.readTimes + "\n" +
                 "创建时间: " + DateUtil.format(this.createTime, DatePattern.NORM_DATETIME_PATTERN);
     }

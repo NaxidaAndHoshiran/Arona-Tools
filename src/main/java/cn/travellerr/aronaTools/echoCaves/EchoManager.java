@@ -2,11 +2,15 @@ package cn.travellerr.aronaTools.echoCaves;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.chahuyun.hibernateplus.HibernateFactory;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.travellerr.aronaTools.AronaTools;
 import cn.travellerr.aronaTools.entity.Echo;
+import cn.travellerr.aronaTools.shareTools.Log;
+import cn.travellerr.entity.Favourite;
 import cn.travellerr.utils.FavorUtil;
 import cn.travellerr.utils.FavouriteManager;
-import cn.travellerr.utils.Log;
 import net.mamoe.mirai.console.command.CommandContext;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.contact.Contact;
@@ -14,6 +18,7 @@ import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,13 +39,14 @@ public class EchoManager {
         long groupId = group.getId();
         long userId = user.getId();
 
-        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()*2);
+        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()/4);
 
-        if (isInfoFailed(subject, user, needMoney)) {
+        if (isInfoFailed(subject, user, needMoney) || isInCoolDown(userId)) {
             return;
         }
 
         Long id = HibernateFactory.selectList(Echo.class).stream().map(Echo::getId).max(Long::compareTo).orElse(0L) + 1;
+
 
         Echo echo = Echo.builder()
                 .id(id)
@@ -59,6 +65,15 @@ public class EchoManager {
         subject.sendMessage(new At(userId).plus("\n回声创建成功! ID: " + echo.getId() + "\n消耗" + needMoney + "金币"));
     }
 
+    private static boolean isInCoolDown(long userId) {
+        Date lastEchoTime = HibernateFactory.selectList(Echo.class).stream()
+                .filter(echo -> echo.getUserId() == userId)
+                .map(Echo::getCreateTime)
+                .max(Date::compareTo).orElse(new Date(0));
+
+        return DateUtil.between(lastEchoTime, new Date(), DateUnit.SECOND) < AronaTools.config.getEchoCoolDown();
+    }
+
     /**
      * 创建回声并保存到数据库（不指定群组）。
      *
@@ -71,7 +86,7 @@ public class EchoManager {
         String userName = user.getNick();
         long userId = user.getId();
 
-        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()*2);
+        int needMoney = Math.max(AronaTools.config.getEchoMoney(), message.length()/4);
 
         if (isInfoFailed(subject, user, needMoney)) {
             return;
@@ -134,10 +149,16 @@ public class EchoManager {
      */
     public static void getRandomEcho (Contact subject, User user, MessageChain originalMessage) {
 
-        Echo echo = HibernateFactory.selectList(Echo.class)
+        List<Echo> filteredEchos = HibernateFactory.selectList(Echo.class)
                 .stream().filter(Echo::getIsApproved).filter(echo1 -> !echo1.getIsReported())
-                .collect(Collectors.toList())
-                .get((int) (Math.random() * HibernateFactory.selectList(Echo.class).size()));
+                .collect(Collectors.toList());
+        if (filteredEchos.isEmpty()) {
+            Log.error("没有可用回声! ");
+            subject.sendMessage(new At(user.getId()).plus(" 出错啦~没有可用回声"));
+            return;
+        }
+        Echo echo = filteredEchos.get(RandomUtil.randomInt(0, filteredEchos.size()));
+
         if (echo == null) {
             Log.error("回声不存在! ");
             subject.sendMessage(new At(user.getId()).plus(" 出错啦~回声不存在"));
@@ -304,7 +325,7 @@ public class EchoManager {
             return true;
         }
 
-        if (FavorUtil.FavorLevel(FavouriteManager.getInfo(userId).getExp()) < AronaTools.config.getEchoFavorLevel()) {
+        if (getExpByLevel(FavouriteManager.getInfo(userId)) < AronaTools.config.getEchoFavorLevel()) {
             subject.sendMessage(new At(userId).plus(String.format("\n好感度不足! (好感度等级%d以上才能投递)", needFavorLevel)));
             return true;
         }
@@ -312,6 +333,13 @@ public class EchoManager {
         EconomyUtil.plusMoneyToUser(user, -needMoney);
 
         return false;
+    }
+
+    private static long getExpByLevel(Favourite userInfo) {
+        if (userInfo == null) {
+            return 0;
+        }
+        return FavorUtil.FavorLevel(userInfo.getExp());
     }
 
     /**

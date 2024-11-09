@@ -2,6 +2,8 @@ package cn.travellerr.aronaTools.command
 
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.echoCaves.EchoManager
+import cn.travellerr.aronaTools.electronicPets.shop.WorkShopItemManager
+import cn.travellerr.aronaTools.electronicPets.task.WorkShopTaskManager
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
@@ -185,4 +187,62 @@ object VerifyEcho :CompositeCommand(AronaTools.INSTANCE,"verifyEcho",
     }
 
 
+}
+
+object VerifyPetTaskWorkShop : CompositeCommand(AronaTools.INSTANCE,"verifyPetTaskWorkShop",
+    "审核电子宠物任务工坊", "审核任务工坊", "审核任务",
+    description = "审核电子宠物工坊任务") {
+
+    @SubCommand("通过", "通过任务", "通过电子宠物工坊任务")
+    fun approve(context: CommandContext, id: Int) {
+        val subject = context.sender.subject!!
+        WorkShopTaskManager.approveTask(subject, id)
+        return
+    }
+
+    @SubCommand("拒绝", "拒绝任务", "拒绝电子宠物工坊任务")
+    fun reject(context: CommandContext, id: Int) {
+        val subject = context.sender.subject!!
+        WorkShopTaskManager.rejectTask(subject, id)
+
+        return
+    }
+
+    @SubCommand("获取", "获取任务", "获取电子宠物工坊任务", "获取待审核任务", "获取待审核电子宠物工坊任务")
+    fun getUnverifiedTasks(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        WorkShopTaskManager.getUnverifiedTaskList(subject)
+
+        return
+    }
+}
+
+object VerifyPetItemWorkShop : CompositeCommand(AronaTools.INSTANCE,"verifyPetItemWorkShop",
+    "审核电子宠物工坊", "审核物品工坊", "审核物品",
+    description = "审核电子宠物工坊物品") {
+
+    @SubCommand("通过", "通过物品", "通过电子宠物工坊物品")
+    fun approve(context: CommandContext, id: Int) {
+        val subject = context.sender.subject!!
+        WorkShopItemManager.approveItem(subject, id)
+        return
+    }
+
+    @SubCommand("拒绝", "拒绝物品", "拒绝电子宠物工坊物品")
+    fun reject(context: CommandContext, id: Int) {
+        val subject = context.sender.subject!!
+        WorkShopItemManager.rejectItem(subject, id)
+
+        return
+    }
+
+    @SubCommand("获取", "获取物品", "获取电子宠物工坊物品", "获取待审核物品", "获取待审核电子宠物工坊物品")
+    fun getUnverifiedTasks(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        WorkShopItemManager.getUnverifiedItemList(subject)
+
+        return
+    }
 }

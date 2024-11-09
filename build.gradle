@@ -20,6 +20,7 @@ dependencies {
     compileOnly "cn.chahuyun:HuYanEconomy:latest.release"
     compileOnly(files('./libs/Favorability.mirai2.jar'))
 
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
     implementation("cn.chahuyun:hibernate-plus:1.0.16")
 }
 

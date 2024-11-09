@@ -93,12 +93,12 @@ public class PetInfo {
      * 宠物清洁值
      */
     @Builder.Default
-    private double petClean = 100;
+    private double petHealth = 100;
     /**
      * 宠物最大清洁值
      */
     @Builder.Default
-    private Integer petMaxClean = 100;
+    private Integer petMaxHealth = 100;
     /**
      * 宠物能量值
      */
@@ -139,6 +139,12 @@ public class PetInfo {
     @Builder.Default
     private Boolean isBind = false;
 
+    @Builder.Default
+    private Integer taskId = 0;
+
+    @Builder.Default
+    private Date taskStartTime = new Date(0);
+
     /**
      * 获取宠物信息的字符串表示
      *
@@ -153,7 +159,7 @@ public class PetInfo {
                 "生命值: " + df.format(this.petHp) + "/" + this.petMaxHp + "\n" +
                 "饥饿值: " + df.format(this.petHunger) + "/" + this.petMaxHunger + "\n" +
                 "心情值: " + df.format(this.petMood) + "/" + this.petMaxMood + "\n" +
-                "清洁值: " + df.format(this.petClean) + "/" + this.petMaxClean + "\n" +
+                "清洁值: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
                 "能量值: " + df.format(this.petEnergy) + "/" + this.petMaxEnergy + "\n" +
                 "每分钟变化值: " + this.petType.getValueChangePerMin() + "\n" +
                 (this.isSleeping ? "宠物正在睡觉\n" : "") +
@@ -174,6 +180,7 @@ public class PetInfo {
         updateMood(timeDifference);
         updateClean(timeDifference);
         updateHp(timeDifference);
+        levelUp();
         HibernateFactory.merge(this);
     }
 
@@ -185,6 +192,9 @@ public class PetInfo {
     private void updateHunger(Long timeDifference) {
         if (this.petHunger > 0) {
             this.petHunger -= timeDifference * this.petType.getValueChangePerMin();
+            if (this.petHunger < 0) {
+                this.petHunger = 0.0;
+            }
         } else {
             this.petHp -= timeDifference * this.petType.getValueChangePerMin();
         }
@@ -203,6 +213,10 @@ public class PetInfo {
 
         if (this.petMood > 0) {
             this.petMood -= needChange;
+
+            if (this.petMood < 0) {
+                this.petMood = 0.0;
+            }
         } else {
             this.petHp -= needChange;
         }
@@ -219,15 +233,16 @@ public class PetInfo {
         double floatValue = RandomUtil.randomDouble(0, 1.5);
         double needChange = timeDifference * this.petType.getValueChangePerMin() + floatValue;
 
-        if (this.petClean > 0) {
-            this.petClean -= needChange;
-            if (this.petClean < 50) {
-                this.isSick = true;
+        if (this.petHealth > 0) {
+            this.petHealth -= needChange;
+            if (this.petHealth < 0) {
+                this.petHealth = 0.0;
             }
+            this.isSick = this.petHealth < 50;
         } else {
             this.petHp -= needChange;
         }
-        this.petClean = Double.parseDouble(df.format(this.petClean));
+        this.petHealth = Double.parseDouble(df.format(this.petHealth));
         this.petHp = Double.parseDouble(df.format(this.petHp));
     }
 
@@ -247,9 +262,13 @@ public class PetInfo {
         }
         if (this.petHunger > this.petMaxHunger * 0.7 &&
                 this.petMood > this.petMaxMood * 0.5 &&
-                this.petClean > this.petMaxClean * 0.6
+                this.petHealth > this.petMaxHealth * 0.6
         ) {
             this.petHp += this.petType.getValueChangePerMin() * 2 * timeDifference;
+        }
+
+        if (this.petHp < 0) {
+            this.petHp = 0.0;
         }
         this.petHp = Double.parseDouble(df.format(this.petHp));
     }
@@ -272,5 +291,79 @@ public class PetInfo {
      */
     private void updateEnergy() {
         // TODO 没想好能量值干什么
+    }
+
+    public void save() {
+        HibernateFactory.merge(this);
+    }
+
+    /**
+     * 增加宠物的经验值
+     *
+     * @param amount 增加的经验值数量
+     */
+    public void addExp(long amount) {
+        this.petExp += amount;
+    }
+
+    /**
+     * 增加宠物的心情值
+     *
+     * @param amount 增加的心情值数量
+     */
+    public void addMood(double amount) {
+        this.petMood += amount;
+        if (this.petMood > this.petMaxMood) {
+            this.petMood = Double.parseDouble(df.format(this.petMaxMood));
+        }
+    }
+
+    /**
+     * 增加宠物的饥饿值
+     *
+     * @param amount 增加的饥饿值数量
+     */
+    public void addHunger(double amount) {
+        this.petHunger += amount;
+        if (this.petHunger > this.petMaxHunger) {
+            this.petHunger = Double.parseDouble(df.format(this.petMaxHunger));
+        }
+    }
+
+    /**
+     * 增加宠物的清洁值
+     *
+     * @param amount 增加的清洁值数量
+     */
+    public void addHealth(double amount) {
+        this.petHealth += amount;
+        if (this.petHealth > this.petMaxHealth) {
+            this.petHealth = Double.parseDouble(df.format(this.petMaxHealth));
+        }
+    }
+
+    /**
+     * 增加宠物的好感度
+     *
+     * @param amount 增加的好感度数量
+     */
+    public void addRelationship(double amount) {
+        this.petRelationship += amount;
+        this.petRelationship = Double.parseDouble(df.format(this.petRelationship));
+    }
+
+    private void levelUp() {
+
+        if (this.petExp >= this.petMaxExp) {
+            this.petExp = 0L;
+            this.petLevel++;
+            this.petMaxExp = this.petMaxExp * 2;
+            this.petMaxHp = (int) (this.petMaxHp * 1.2);
+            this.petMaxEnergy = (int) (this.petMaxEnergy * 1.2);
+            this.petMaxHunger = (int) (this.petMaxHunger * 1.2);
+            this.petMaxMood = (int) (this.petMaxMood * 1.3);
+            this.petMaxHealth = (int) (this.petMaxHealth * 1.1);
+            this.petRelationship += 0.5 * this.petLevel;
+        }
     }
 }

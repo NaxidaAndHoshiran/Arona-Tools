@@ -65,21 +65,19 @@ public class TaskManager {
             return;
         }
 
-        long needTime = DateUtil.between(DateUtil.offsetMinute(petInfo.getTaskStartTime(), task.getTakeTime()), new Date(), DateUnit.MINUTE);
-        long usedTime = task.getTakeTime() - needTime;
+        long usedTime = DateUtil.between(petInfo.getTaskStartTime(), new Date(), DateUnit.MINUTE);
+        if (usedTime > task.getTakeTime()) usedTime = task.getTakeTime();
         if (usedTime < 2) usedTime = 0;
 
-        long taskTime = needTime > 0 ? usedTime : task.getTakeTime();
-
-        EconomyUtil.plusMoneyToUser(user, task.getMoneyPerMin() * taskTime);
+        EconomyUtil.plusMoneyToUser(user, task.getMoneyPerMin() * usedTime);
 
 
-        petInfo.addExp((long) (task.getExpPerMin() * taskTime));
-        petInfo.addMood(task.getMoodPerMin() * taskTime);
+        petInfo.addExp((long) (task.getExpPerMin() * usedTime));
+        petInfo.addMood(task.getMoodPerMin() * usedTime);
         petInfo.setTaskId(0);
         petInfo.update();
         petInfo.save();
 
-        subject.sendMessage(new QuoteReply(message).plus("任务结束：" + task.getName() + "\n任务时长：" + taskTime + "分钟\n金币奖励：" + task.getMoneyPerMin() * taskTime + "\n经验奖励：" + task.getExpPerMin() * taskTime + "\n心情奖励：" + task.getMoodPerMin() * taskTime));
+        subject.sendMessage(new QuoteReply(message).plus("任务结束：" + task.getName() + "\n任务时长：" + usedTime + "分钟\n金币奖励：" + task.getMoneyPerMin() * usedTime + "\n经验奖励：" + task.getExpPerMin() * usedTime + "\n心情奖励：" + task.getMoodPerMin() * usedTime));
     }
 }

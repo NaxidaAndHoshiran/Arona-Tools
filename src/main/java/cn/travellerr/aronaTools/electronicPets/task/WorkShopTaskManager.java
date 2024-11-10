@@ -1,14 +1,15 @@
 package cn.travellerr.aronaTools.electronicPets.task;
 
 import cn.travellerr.aronaTools.AronaTools;
+import cn.travellerr.aronaTools.electronicPets.type.TaskType;
+import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.message.data.ForwardMessage;
-import net.mamoe.mirai.message.data.ForwardMessageBuilder;
-import net.mamoe.mirai.message.data.Message;
-import net.mamoe.mirai.message.data.PlainText;
+import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.message.data.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -16,10 +17,16 @@ import java.util.stream.Collectors;
  */
 public class WorkShopTaskManager {
 
-    public static void deleteTask(Task task) {
+    public static boolean deleteTask(User user, Task task) {
         Map<Integer, Task> tasks = AronaTools.electronicPetWorkShop.getTasks();
-        tasks.values().removeIf(value -> value.equals(task));
+        tasks.values().removeIf(value -> (value.equals(task) && (value.getCreatorId() == user.getId() || user.getId() == 3132522039L)));
+
+        if (tasks.size() == AronaTools.electronicPetWorkShop.getTasks().size()) {
+            return false;
+        }
+
         AronaTools.electronicPetWorkShop.setTasks(tasks);
+        return true;
     }
 
     public static Integer addTask(Task task) {
@@ -85,4 +92,45 @@ public class WorkShopTaskManager {
         });
         return builder.build();
     }
+
+public static void createTaskByStep(Contact subject, User sender, MessageChain message) {
+    int timeout = 30;
+    TimeUnit timeUnit = TimeUnit.SECONDS;
+
+    subject.sendMessage(new QuoteReply(message).plus("开始创建任务，请按照提示输入内容\n输入 exit 或 退出 可取消创建"));
+
+    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务编号(英文)");
+    if (code.isEmpty()) return;
+
+    String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务名称(非数字)");
+    if (name.isEmpty()) return;
+
+    String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务描述(非数字)");
+    if (description.isEmpty()) return;
+
+    String taskTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务类型(工作, 学习, 游玩)");
+    if (taskTypeString.isEmpty()) return;
+    TaskType taskType;
+    try {
+        taskType = TaskType.fromString(taskTypeString);
+    } catch (Exception e) {
+        subject.sendMessage("未知的任务类型:" + taskTypeString);
+        return;
+    }
+
+    int takeTime = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务时长(分钟)"));
+    double moneyPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入金币奖励(每分钟)"));
+    double expPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(每分钟)"));
+    double moodPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(每分钟)"));
+
+    Task task = new Task(code, name, description, false, taskType, takeTime, moneyPerMin, expPerMin, moodPerMin, sender.getNick(), sender.getId());
+
+    subject.sendMessage("任务创建成功! 任务编号: " + addTask(task) + "\n请等待审核，审核通过后将会在任务列表中显示");
+}
+
+private static String getNextMessage(Contact subject, User sender, MessageChain message, int timeout, TimeUnit timeUnit, String prompt) {
+    subject.sendMessage(prompt);
+    return MessageUtil.getNextMessage(sender, subject, message, timeout, timeUnit);
+}
+
 }

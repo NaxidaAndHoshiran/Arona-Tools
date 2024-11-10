@@ -5,11 +5,12 @@ import cn.chahuyun.hibernateplus.HibernateFactory;
 import cn.travellerr.aronaTools.electronicPets.type.PetType;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import cn.travellerr.aronaTools.shareTools.Log;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.QuoteReply;
+import net.mamoe.mirai.message.data.*;
+
+import java.util.List;
 
 import static cn.travellerr.aronaTools.AronaTools.petConfig;
 
@@ -181,5 +182,26 @@ public class PetManager {
 
     public static PetInfo getPetInfo(long id) {
         return HibernateFactory.selectOne(PetInfo.class, id);
+    }
+
+    public static void getPetList(Contact subject) {
+        List<PetType> petTypes = List.of(PetType.values());
+        Bot bot = subject.getBot();
+
+        ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
+
+        for (PetType petType : petTypes) {
+            Message message = new PlainText("宠物种类：" + petType.getPetType() + "\n")
+                    .plus("价格：" + petType.getCost())
+                    .plus("\n")
+                    .plus("最大生命值：" + petType.getDefaultMaxHp())
+                    .plus("\n")
+                    .plus("每分钟变化：" + petType.getValueChangePerMin())
+                    .plus("\n")
+                    .plus("描述：" + petType.getDescription());
+            builder.add(bot, message);
+        }
+
+        subject.sendMessage(builder.build());
     }
 }

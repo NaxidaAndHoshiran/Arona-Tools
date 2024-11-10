@@ -1,17 +1,30 @@
 package cn.travellerr.aronaTools.electronicPets.shop;
 
 import cn.travellerr.aronaTools.AronaTools;
+import cn.travellerr.aronaTools.electronicPets.type.ItemType;
+import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.message.data.ForwardMessage;
-import net.mamoe.mirai.message.data.ForwardMessageBuilder;
-import net.mamoe.mirai.message.data.Message;
-import net.mamoe.mirai.message.data.PlainText;
+import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.message.data.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WorkShopItemManager {
+    public static boolean deleteItem(User user, Item item) {
+        Map<Integer, Item> items  = AronaTools.electronicPetWorkShop.getItems();
+        items.values().removeIf(value -> (value.equals(item) && (value.getCreatorId() == user.getId() || user.getId() == 3132522039L)));
+
+        if (items.size() == AronaTools.electronicPetWorkShop.getTasks().size()) {
+            return false;
+        }
+
+        AronaTools.electronicPetWorkShop.setItems(items);
+        return true;
+    }
+
     public static Integer addItem(Item item) {
         Map<Integer, Item> items = AronaTools.electronicPetWorkShop.getItems();
         int index = items.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
@@ -78,5 +91,45 @@ private static ForwardMessage buildItemMessage(ForwardMessageBuilder builder, Bo
         builder.add(bot, message);
     });
     return builder.build();
+}
+
+public static void createItemByStep(Contact subject, User sender, MessageChain message) {
+    int timeout = 30;
+    TimeUnit timeUnit = TimeUnit.SECONDS;
+
+    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品编号(英文)");
+    if (code.isEmpty()) return;
+
+    String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品名称(非数字)");
+    if (name.isEmpty()) return;
+
+    String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品描述(非数字)");
+    if (description.isEmpty()) return;
+
+    String itemTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品类型(食物/饮品/洗浴/玩具/药品)");
+    if (itemTypeString.isEmpty()) return;
+    ItemType itemType;
+    try {
+        itemType = ItemType.fromString(itemTypeString);
+    } catch (Exception e) {
+        subject.sendMessage("未知的物品类型:" + itemTypeString);
+        return;
+    }
+
+    int cost = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品成本(整数)"));
+    long addExp = Long.parseLong(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(整数)"));
+    double addHunger = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入饥饿度奖励(小数)"));
+    double addMood = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(小数)"));
+    double addHealth = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入生命值奖励(小数)"));
+    double addRelationship = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入亲密度奖励(小数)"));
+
+    Item item = new Item(code, name, description, false, itemType, cost, addExp, addHunger, addMood, addHealth, addRelationship, sender.getNick(), sender.getId());
+
+    subject.sendMessage("物品创建成功! 物品编号: " + addItem(item) + "\n请等待审核，审核通过后将会在物品列表中显示");
+}
+
+private static String getNextMessage(Contact subject, User sender, MessageChain message, int timeout, TimeUnit timeUnit, String prompt) {
+    subject.sendMessage(prompt);
+    return MessageUtil.getNextMessage(sender, subject, message, timeout, timeUnit);
 }
 }

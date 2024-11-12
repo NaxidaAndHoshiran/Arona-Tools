@@ -26,7 +26,10 @@ public class CheckInvite {
     private static boolean checkLove(User user) {
         try {
             Favourite favourite = FavouriteManager.getInfo(user.getId());
-            return favourite != null && favourite.getExp() >= config.getLove();
+            if (favourite == null) {
+                return false;
+            }
+            return favourite.getExp() >= config.getLove();
         } catch (Exception e) {
             return false;
         }
@@ -115,8 +118,13 @@ public class CheckInvite {
 
         String groupMsg = "尝试加入 什亭之匣群聊(626860767)";
 
+        Favourite favourite = FavouriteManager.getInfo(user.getId());
+
+        long userExp = 0;
+        if (favourite != null) userExp = favourite.getExp();
+
         String tryMsg = (isMoneyEnough ? "" : (replaceVar(moneyMsg, "金币", EconomyUtil.getMoneyByUser(user)) + "\n"))
-                + (isLoveEnough ? "" : (replaceVar(loveMsg, "好感度", FavouriteManager.getInfo(userId).getExp()) + "\n"))
+                + (isLoveEnough ? "" : (replaceVar(loveMsg, "好感度", userExp) + "\n"))
                 + (isInGroup ? "" : (groupMsg + "\n"));
 
         String BotVerifyMsg = (isAccept ? "通过" : ("未通过" + "审核"

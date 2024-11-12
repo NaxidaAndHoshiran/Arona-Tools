@@ -34,9 +34,6 @@ public class PetCommandListener extends SimpleListenerHost {
     private final Regex renamePetCommand = BuildCommand.createCommand("重命名宠物|修改宠物名", String.class);
     private final Regex sleepPetCommand = BuildCommand.createCommand("让宠物休息|让宠物睡觉|让宠物休息一下|宠物休息|宠物睡觉");
     private final Regex awakePetCommand = BuildCommand.createCommand("唤醒宠物|让宠物醒来|让宠物起床|宠物起床");
-    private final Regex feedPetCommand = BuildCommand.createCommand("喂食宠物|给宠物喂食|宠物喂食|喂养宠物");
-    private final Regex cleanPetCommand = BuildCommand.createCommand("清洁宠物|给宠物洗澡|宠物洗澡");
-    private final Regex playPetCommand = BuildCommand.createCommand("给宠物玩耍|宠物玩耍|玩耍宠物|宠物玩耍");
     private final Regex startTaskCommand = BuildCommand.createCommand("开始任务|接受任务", Integer.class);
     private final Regex checkTaskCommand = BuildCommand.createCommand("查看任务|任务详情|任务信息");
     private final Regex endTaskCommand = BuildCommand.createCommand("结束任务|放弃任务|取消任务");
@@ -66,12 +63,6 @@ public class PetCommandListener extends SimpleListenerHost {
             PetManager.sleepPet(subject, originalMessage, sender);
         } else if (awakePetCommand.matches(message)) {
             PetManager.awakePet(subject, originalMessage, sender);
-        } else if (cleanPetCommand.matches(message)) {
-            PetManager.cleanPet(subject, originalMessage, sender);
-        } else if (playPetCommand.matches(message)) {
-            PetManager.playWithPet(subject, originalMessage, sender);
-        } else if (feedPetCommand.matches(message)) {
-            PetManager.feedPet(subject, originalMessage, sender);
         } else if (startTaskCommand.matches(message)) {
             handleStartTaskCommand(subject, sender, message, originalMessage);
         } else if (checkTaskCommand.matches(message)) {

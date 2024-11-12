@@ -2,6 +2,7 @@ package cn.travellerr.aronaTools.command
 
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.echoCaves.EchoManager
+import cn.travellerr.aronaTools.electronicPets.PetManager
 import cn.travellerr.aronaTools.electronicPets.shop.WorkShopItemManager
 import cn.travellerr.aronaTools.electronicPets.task.WorkShopTaskManager
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
@@ -244,5 +245,28 @@ object VerifyPetItemWorkShop : CompositeCommand(AronaTools.INSTANCE,"verifyPetIt
         WorkShopItemManager.getUnverifiedItemList(subject)
 
         return
+    }
+}
+
+object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
+    "测试", "测试命令", "测试指令",
+    description = "测试命令") {
+
+    @SubCommand("增加宠物经验")
+    suspend fun test(context: CommandContext, exp: Long) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val petInfo = PetManager.getPetInfo(user.id)
+
+        if (petInfo == null) {
+            subject.sendMessage("你还没有宠物哦")
+            return
+        }
+
+        petInfo.addExp(exp)
+        petInfo.save()
+
+        subject.sendMessage("增加了${exp}点经验")
     }
 }

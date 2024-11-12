@@ -13,5 +13,6 @@ object RegCommand {
         CommandManager.registerCommand(VerifyEcho)
         CommandManager.registerCommand(VerifyPetTaskWorkShop)
         CommandManager.registerCommand(VerifyPetItemWorkShop)
+        CommandManager.registerCommand(Tester)
     }
 }

@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.*;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class WorkShopItemManager {
@@ -97,8 +98,14 @@ public static void createItemByStep(Contact subject, User sender, MessageChain m
     int timeout = 30;
     TimeUnit timeUnit = TimeUnit.SECONDS;
 
-    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品编号(英文)");
+    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品编号(英文，不超过20字符)");
     if (code.isEmpty()) return;
+
+    // 匹配code是否为英文
+    if (!Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
+        subject.sendMessage("物品编号只能为英文和下划线，且长度不超过20");
+        return;
+    }
 
     String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品名称(非数字)");
     if (name.isEmpty()) return;

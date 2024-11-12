@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.*;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -99,8 +100,12 @@ public static void createTaskByStep(Contact subject, User sender, MessageChain m
 
     subject.sendMessage(new QuoteReply(message).plus("开始创建任务，请按照提示输入内容\n输入 exit 或 退出 可取消创建"));
 
-    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务编号(英文)");
+    String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务编号(英文，不超过20字符)");
     if (code.isEmpty()) return;
+    if (!Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
+        subject.sendMessage("任务编号只能为英文和下划线，且长度不超过20");
+        return;
+    }
 
     String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务名称(非数字)");
     if (name.isEmpty()) return;

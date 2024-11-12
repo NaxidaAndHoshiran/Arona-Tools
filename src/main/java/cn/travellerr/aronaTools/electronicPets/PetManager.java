@@ -117,12 +117,24 @@ public class PetManager {
             subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
             return;
         }
+        if (petInfo.getIsSleeping()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物已经在睡觉了！"));
+            return;
+        }
+        if (petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物已经死亡！"));
+            return;
+        }
+        if (petInfo.getTaskId() != 0) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物正在执行任务！请先结束任务！"));
+            return;
+        }
 
         petInfo.update();
         petInfo.setIsSleeping(true);
         HibernateFactory.merge(petInfo);
 
-        subject.sendMessage(new QuoteReply(message).plus("宠物已经睡觉！"));
+        subject.sendMessage(new QuoteReply(message).plus("宠物睡着了……"));
     }
 
     public static void awakePet(Contact subject, MessageChain message, User sender) {
@@ -135,49 +147,7 @@ public class PetManager {
         petInfo.setIsSleeping(false);
         HibernateFactory.merge(petInfo);
 
-        subject.sendMessage(new QuoteReply(message).plus("宠物已经醒来！"));
-    }
-
-    public static void feedPet(Contact subject, MessageChain message, User sender) {
-        PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
-        if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
-            return;
-        }
-
-        petInfo.update();
-        petInfo.setPetHunger(Double.valueOf(petInfo.getPetMaxHunger()));
-        HibernateFactory.merge(petInfo);
-
-        subject.sendMessage(new QuoteReply(message).plus("宠物已经吃饱！"));
-    }
-
-    public static void cleanPet(Contact subject, MessageChain message, User sender) {
-        PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
-        if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
-            return;
-        }
-
-        petInfo.update();
-        petInfo.setPetHealth(Double.valueOf(petInfo.getPetMaxHealth()));
-        HibernateFactory.merge(petInfo);
-
-        subject.sendMessage(new QuoteReply(message).plus("宠物已经洗澡！"));
-    }
-
-    public static void playWithPet(Contact subject, MessageChain message, User sender) {
-        PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
-        if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
-            return;
-        }
-
-        petInfo.update();
-        petInfo.setPetMood(Double.valueOf(petInfo.getPetMaxMood()));
-        HibernateFactory.merge(petInfo);
-
-        subject.sendMessage(new QuoteReply(message).plus("宠物玩得很开心！"));
+        subject.sendMessage(new QuoteReply(message).plus("宠物缓缓睁开眼睛……"));
     }
 
     public static PetInfo getPetInfo(long id) {

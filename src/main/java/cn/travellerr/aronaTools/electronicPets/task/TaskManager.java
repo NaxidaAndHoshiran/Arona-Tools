@@ -15,8 +15,20 @@ import java.util.Date;
 
 public class TaskManager {
     public static void startTask(Contact subject, MessageChain msg, PetInfo petInfo, int taskId) {
+        if (petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(msg).plus("宠物已死亡"));
+            return;
+        }
         if (petInfo.getTaskId() != 0) {
             subject.sendMessage(new QuoteReply(msg).plus("当前已有任务! 请先结束任务"));
+            return;
+        }
+        if (petInfo.getIsSick()) {
+            subject.sendMessage(new QuoteReply(msg).plus("宠物生病了，无法开始任务"));
+            return;
+        }
+        if (petInfo.getIsSleeping()) {
+            subject.sendMessage(new QuoteReply(msg).plus("宠物正在睡觉，先唤醒他吧……"));
             return;
         }
 
@@ -38,9 +50,21 @@ public class TaskManager {
     }
 
     public static void getTaskInfo(User user, Contact subject, MessageChain message, PetInfo petInfo) {
+        if (petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物已死亡"));
+            return;
+        }
         Task task = getTask(petInfo.getTaskId());
         if (task == null) {
             subject.sendMessage(new QuoteReply(message).plus("任务不存在"));
+            return;
+        }
+        if (petInfo.getIsSick()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物生病了，先好好养伤啊"));
+            return;
+        }
+        if (petInfo.getIsSleeping()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物正在睡觉，先唤醒他吧……"));
             return;
         }
 
@@ -59,9 +83,25 @@ public class TaskManager {
     }
 
     public static void endTask(User user, Contact subject, MessageChain message, PetInfo petInfo) {
+        if (petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(message).plus("宠物已死亡"));
+            return;
+        }
         Task task = getTask(petInfo.getTaskId());
         if (task == null) {
             subject.sendMessage(new QuoteReply(message).plus("任务不存在"));
+            return;
+        }
+        if (petInfo.getIsSick()) {
+            petInfo.setTaskId(0);
+            petInfo.save();
+            subject.sendMessage(new QuoteReply(message).plus("宠物生病了，无法开始任务"));
+            return;
+        }
+        if (petInfo.getIsSleeping()) {
+            petInfo.setTaskId(0);
+            petInfo.save();
+            subject.sendMessage(new QuoteReply(message).plus("宠物正在睡觉，先唤醒他吧……"));
             return;
         }
 

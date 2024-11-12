@@ -11,6 +11,10 @@ import net.mamoe.mirai.message.data.QuoteReply;
 
 public class ShopManager {
     public static void buyItem (Contact subject, MessageChain msg, User user, PetInfo petInfo, int itemId) {
+        if (petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(msg).plus("宠物已死亡"));
+            return;
+        }
         Item item = getItem(itemId);
 
         double userMoney = EconomyUtil.getMoneyByUser(user);
@@ -27,12 +31,12 @@ public class ShopManager {
 
         EconomyUtil.plusMoneyToUser(user, -item.getPrice());
 
+        petInfo.update();
         petInfo.addExp(item.getExp());
         petInfo.addRelationship(item.getRelation());
         petInfo.addHunger(item.getHunger());
         petInfo.addHealth(item.getHealth());
         petInfo.addMood(item.getMood());
-        petInfo.update();
         petInfo.save();
 
 

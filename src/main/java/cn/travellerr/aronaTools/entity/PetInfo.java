@@ -303,7 +303,17 @@ public class PetInfo {
      * @param amount 增加的经验值数量
      */
     public void addExp(long amount) {
-        this.petExp += amount;
+        while (amount > 0) {
+            long expNeeded = this.petMaxExp - this.petExp;
+            if (amount >= expNeeded) {
+                this.petExp = this.petMaxExp;
+                amount -= expNeeded;
+                levelUp();
+            } else {
+                this.petExp += amount;
+                amount = 0;
+            }
+        }
     }
 
     /**
@@ -339,6 +349,8 @@ public class PetInfo {
         this.petHealth += amount;
         if (this.petHealth > this.petMaxHealth) {
             this.petHealth = Double.parseDouble(df.format(this.petMaxHealth));
+        } else if (this.petHealth < 0) {
+            this.petHealth = 0.0;
         }
     }
 
@@ -357,13 +369,22 @@ public class PetInfo {
         if (this.petExp >= this.petMaxExp) {
             this.petExp = 0L;
             this.petLevel++;
-            this.petMaxExp = this.petMaxExp * 2;
-            this.petMaxHp = (int) (this.petMaxHp * 1.2);
-            this.petMaxEnergy = (int) (this.petMaxEnergy * 1.2);
-            this.petMaxHunger = (int) (this.petMaxHunger * 1.2);
-            this.petMaxMood = (int) (this.petMaxMood * 1.3);
+            this.petMaxExp = (long) (this.petMaxExp * Math.max(1.01, 1.4 - 0.0039 * Math.min(this.petLevel, 100)));
+            this.petMaxHp = (int) (this.petMaxHp * 1.1);
+            this.petMaxEnergy = (int) (this.petMaxEnergy * 1.1);
+            this.petMaxHunger = (int) (this.petMaxHunger * 1.1);
+            this.petMaxMood = (int) (this.petMaxMood * 1.2);
             this.petMaxHealth = (int) (this.petMaxHealth * 1.1);
             this.petRelationship += 0.5 * this.petLevel;
         }
+    }
+
+    private void reborn() {
+        this.isDead = false;
+        this.petHp = 10.0;
+        this.petHunger = Double.valueOf(this.petMaxHunger);
+        this.petMood = Double.valueOf(this.petMaxMood);
+        this.petHealth = Double.valueOf(this.petMaxHealth);
+        this.petEnergy = Double.valueOf(this.petMaxEnergy);
     }
 }

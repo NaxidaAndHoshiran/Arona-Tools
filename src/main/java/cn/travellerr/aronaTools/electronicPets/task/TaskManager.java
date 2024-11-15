@@ -1,13 +1,11 @@
 package cn.travellerr.aronaTools.electronicPets.task;
 
-import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.hutool.core.date.BetweenFormatter;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.travellerr.aronaTools.AronaTools;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.QuoteReply;
 
@@ -49,7 +47,7 @@ public class TaskManager {
         return AronaTools.electronicPetWorkShop.getTasks().get(taskId);
     }
 
-    public static void getTaskInfo(User user, Contact subject, MessageChain message, PetInfo petInfo) {
+    public static void getTaskInfo(Contact subject, MessageChain message, PetInfo petInfo) {
         if (petInfo.getIsDead()) {
             subject.sendMessage(new QuoteReply(message).plus("宠物已死亡"));
             return;
@@ -78,11 +76,11 @@ public class TaskManager {
         subject.sendMessage(new QuoteReply(message).plus(isTasking));
 
         if (isDone) {
-            endTask(user, subject, message, petInfo);
+            endTask(subject, message, petInfo);
         }
     }
 
-    public static void endTask(User user, Contact subject, MessageChain message, PetInfo petInfo) {
+    public static void endTask(Contact subject, MessageChain message, PetInfo petInfo) {
         if (petInfo.getIsDead()) {
             subject.sendMessage(new QuoteReply(message).plus("宠物已死亡"));
             return;
@@ -109,13 +107,12 @@ public class TaskManager {
         if (usedTime > task.getTakeTime()) usedTime = task.getTakeTime();
         if (usedTime < 2) usedTime = 0;
 
-        EconomyUtil.plusMoneyToUser(user, task.getMoneyPerMin() * usedTime);
 
-
+        petInfo.update();
+        petInfo.addPetCoin(task.getMoneyPerMin() * usedTime);
         petInfo.addExp((long) (task.getExpPerMin() * usedTime));
         petInfo.addMood(task.getMoodPerMin() * usedTime);
         petInfo.setTaskId(0);
-        petInfo.update();
         petInfo.save();
 
         subject.sendMessage(new QuoteReply(message).plus("任务结束：" + task.getName() + "\n任务时长：" + usedTime + "分钟\n金币奖励：" + task.getMoneyPerMin() * usedTime + "\n经验奖励：" + task.getExpPerMin() * usedTime + "\n心情奖励：" + task.getMoodPerMin() * usedTime));

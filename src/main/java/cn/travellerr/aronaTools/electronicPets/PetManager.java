@@ -174,4 +174,32 @@ public class PetManager {
 
         subject.sendMessage(builder.build());
     }
+
+    public static void userMoneyToPetCoin(Contact subject, MessageChain originalMessage, User sender, int money) {
+        if (money <= 0) {
+            subject.sendMessage(new QuoteReply(originalMessage).plus("转换金额必须大于0！"));
+            return;
+        }
+
+        double userMoney = EconomyUtil.getMoneyByUser(sender);
+
+        if (userMoney < money) {
+            subject.sendMessage(new QuoteReply(originalMessage).plus("您的余额不足！"));
+            return;
+        }
+
+        PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
+        if (petInfo == null) {
+            subject.sendMessage(new QuoteReply(originalMessage).plus("您还没有宠物哦！"));
+            return;
+        }
+
+        EconomyUtil.plusMoneyToUser(sender, -money);
+
+        petInfo.update();
+        petInfo.addPetCoin(money * petConfig.getExchangePetMoney());
+        savePetInfo(petInfo);
+
+        subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为宠物币：" + money * petConfig.getExchangePetMoney()) + "\n当前宠物币：" + petInfo.getPetCoin());
+    }
 }

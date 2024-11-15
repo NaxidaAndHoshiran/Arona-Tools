@@ -1,5 +1,7 @@
 package cn.travellerr.aronaTools.electronicPets.command;
 
+import cn.chahuyun.economy.utils.EconomyUtil;
+import cn.travellerr.aronaTools.AronaTools;
 import cn.travellerr.aronaTools.electronicPets.shop.Item;
 import cn.travellerr.aronaTools.electronicPets.shop.ShopManager;
 import cn.travellerr.aronaTools.electronicPets.shop.WorkShopItemManager;
@@ -8,6 +10,7 @@ import cn.travellerr.aronaTools.electronicPets.task.TaskManager;
 import cn.travellerr.aronaTools.electronicPets.task.WorkShopTaskManager;
 import cn.travellerr.aronaTools.electronicPets.type.ItemType;
 import cn.travellerr.aronaTools.electronicPets.type.TaskType;
+import cn.travellerr.aronaTools.shareTools.BuildCommand;
 import cn.travellerr.aronaTools.shareTools.Log;
 import kotlin.coroutines.CoroutineContext;
 import kotlin.text.Regex;
@@ -78,6 +81,12 @@ public class WorkShopCommandListener extends SimpleListenerHost {
 
         if (createTask.matches(message)) {
             Log.info("创建任务指令");
+
+            if (EconomyUtil.getMoneyByUser(sender) < AronaTools.petConfig.getCreateWorkshopItemMoney()) {
+                subject.sendMessage(new QuoteReply(event.getMessage()).plus("金币不足，无法创建物品\n需要金币: " + AronaTools.petConfig.getCreateWorkshopItemMoney()));
+                return;
+            }
+
             List<String> key = BuildCommand.getEveryValue(createTask, message);
 
             String code = key.get(0);
@@ -101,6 +110,8 @@ public class WorkShopCommandListener extends SimpleListenerHost {
 
             int index = WorkShopTaskManager.addTask(task);
 
+            EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
+
             subject.sendMessage("任务创建成功! 任务编号: " + index + "\n请等待审核，审核通过后将会在任务列表中显示");
 
         }
@@ -115,6 +126,11 @@ public class WorkShopCommandListener extends SimpleListenerHost {
 
         if (createItem.matches(message)) {
             Log.info("创建物品指令");
+
+            if (EconomyUtil.getMoneyByUser(sender) < AronaTools.petConfig.getCreateWorkshopItemMoney()) {
+                subject.sendMessage(new QuoteReply(event.getMessage()).plus("金币不足，无法创建物品\n需要金币: " + AronaTools.petConfig.getCreateWorkshopItemMoney()));
+                return;
+            }
 
             List<String> key = BuildCommand.getEveryValue(createItem, message);
             String code = key.get(0);
@@ -141,6 +157,8 @@ public class WorkShopCommandListener extends SimpleListenerHost {
 
             int index = WorkShopItemManager.addItem(item);
 
+            EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
+
             subject.sendMessage("物品创建成功! 任务编号: " + index + "\n请等待审核，审核通过后将会在物品列表中显示");
         }
 
@@ -152,11 +170,19 @@ public class WorkShopCommandListener extends SimpleListenerHost {
 
         if (createTaskByStep.matches(message)) {
             Log.info("创建任务指令");
+            if (EconomyUtil.getMoneyByUser(sender) < AronaTools.petConfig.getCreateWorkshopItemMoney()) {
+                subject.sendMessage(new QuoteReply(event.getMessage()).plus("金币不足，无法创建物品\n需要金币: " + AronaTools.petConfig.getCreateWorkshopItemMoney()));
+                return;
+            }
             WorkShopTaskManager.createTaskByStep(subject, sender, event.getMessage());
         }
 
         if (createItemByStep.matches(message)) {
             Log.info("创建物品指令");
+            if (EconomyUtil.getMoneyByUser(sender) < AronaTools.petConfig.getCreateWorkshopItemMoney()) {
+                subject.sendMessage(new QuoteReply(event.getMessage()).plus("金币不足，无法创建物品\n需要金币: " + AronaTools.petConfig.getCreateWorkshopItemMoney()));
+                return;
+            }
             WorkShopItemManager.createItemByStep(subject, sender, event.getMessage());
         }
 

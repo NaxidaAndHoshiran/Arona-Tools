@@ -29,9 +29,8 @@ public class ShopManager {
             return;
         }
 
-        EconomyUtil.plusMoneyToUser(user, -item.getPrice());
-
         petInfo.update();
+        petInfo.addPetCoin(-item.getPrice());
         petInfo.addExp(item.getExp());
         petInfo.addRelationship(item.getRelation());
         petInfo.addHunger(item.getHunger());

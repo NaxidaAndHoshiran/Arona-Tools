@@ -5,6 +5,7 @@ import cn.travellerr.aronaTools.electronicPets.shop.ShopManager;
 import cn.travellerr.aronaTools.electronicPets.task.TaskManager;
 import cn.travellerr.aronaTools.electronicPets.type.PetType;
 import cn.travellerr.aronaTools.entity.PetInfo;
+import cn.travellerr.aronaTools.shareTools.BuildCommand;
 import cn.travellerr.aronaTools.shareTools.Log;
 import kotlin.coroutines.CoroutineContext;
 import kotlin.text.Regex;
@@ -22,11 +23,6 @@ import java.util.List;
 public class PetCommandListener extends SimpleListenerHost {
 
     private final Regex getPetListCommand = BuildCommand.createCommand("获取宠物列表|宠物列表|查看宠物列表|查看宠物种类");
-
-    @Override
-    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        super.handleException(context, exception);
-    }
     private final Regex createPetCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class, String.class);
     private final Regex createPetWithDefaultNameCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class);
     private final Regex checkPetCommand = BuildCommand.createCommand("查看宠物|我的宠物|宠物信息|宠物详情");
@@ -38,6 +34,14 @@ public class PetCommandListener extends SimpleListenerHost {
     private final Regex checkTaskCommand = BuildCommand.createCommand("查看任务|任务详情|任务信息");
     private final Regex endTaskCommand = BuildCommand.createCommand("结束任务|放弃任务|取消任务");
     private final Regex buyItemCommand = BuildCommand.createCommand("购买物品|购买道具", Integer.class);
+
+    private final Regex userMoneyToPetCoinCommand = BuildCommand.createCommand("金币兑换|兑换金币|兑换|转金币", Integer.class);
+
+
+    @Override
+    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
+        super.handleException(context, exception);
+    }
 
     @EventHandler
     public void onMessage(@NotNull MessageEvent event) {
@@ -71,6 +75,10 @@ public class PetCommandListener extends SimpleListenerHost {
             handleEndTaskCommand(subject, sender, originalMessage);
         } else if (buyItemCommand.matches(message)) {
             handleBuyItemCommand(subject, sender, message, originalMessage);
+        } else if (userMoneyToPetCoinCommand.matches(message)) {
+            List<String> key = BuildCommand.getEveryValue(userMoneyToPetCoinCommand, message);
+            int money = Integer.parseInt(key.get(0));
+            PetManager.userMoneyToPetCoin(subject, originalMessage, sender, money);
         }
     }
 
@@ -120,11 +128,11 @@ public class PetCommandListener extends SimpleListenerHost {
 
     private void handleCheckTaskCommand(Contact subject, User sender, MessageChain originalMessage) {
         PetInfo petInfo = PetManager.getPetInfo(sender.getId());
-        TaskManager.getTaskInfo(sender, subject, originalMessage, petInfo);
+        TaskManager.getTaskInfo(subject, originalMessage, petInfo);
     }
 
     private void handleEndTaskCommand(Contact subject, User sender, MessageChain originalMessage) {
         PetInfo petInfo = PetManager.getPetInfo(sender.getId());
-        TaskManager.endTask(sender, subject, originalMessage, petInfo);
+        TaskManager.endTask(subject, originalMessage, petInfo);
     }
 }

@@ -36,6 +36,9 @@ public class PetInfo {
      */
     @Id
     private Long userId;
+
+    @Builder.Default
+    private Double petCoin = 0.0;
     /**
      * 宠物名称
      */
@@ -159,7 +162,7 @@ public class PetInfo {
                 "生命值: " + df.format(this.petHp) + "/" + this.petMaxHp + "\n" +
                 "饥饿值: " + df.format(this.petHunger) + "/" + this.petMaxHunger + "\n" +
                 "心情值: " + df.format(this.petMood) + "/" + this.petMaxMood + "\n" +
-                "清洁值: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
+                "健康度: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
                 "能量值: " + df.format(this.petEnergy) + "/" + this.petMaxEnergy + "\n" +
                 "每分钟变化值: " + this.petType.getValueChangePerMin() + "\n" +
                 (this.isSleeping ? "宠物正在睡觉\n" : "") +
@@ -363,6 +366,17 @@ public class PetInfo {
         this.petRelationship += amount;
         this.petRelationship = Double.parseDouble(df.format(this.petRelationship));
     }
+
+    /**
+     * 增加宠物的金币
+     *
+     * @param amount 增加的金币数量
+     */
+    public void addPetCoin(double amount) {
+        this.petCoin += amount;
+        this.petCoin = Double.parseDouble(df.format(this.petCoin));
+    }
+
 
     private void levelUp() {
 

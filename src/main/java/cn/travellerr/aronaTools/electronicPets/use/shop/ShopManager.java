@@ -1,8 +1,7 @@
-package cn.travellerr.aronaTools.electronicPets.shop;
+package cn.travellerr.aronaTools.electronicPets.use.shop;
 
-import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.AronaTools;
-import cn.travellerr.aronaTools.electronicPets.PetManager;
+import cn.travellerr.aronaTools.electronicPets.use.PetManager;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -17,7 +16,7 @@ public class ShopManager {
         }
         Item item = getItem(itemId);
 
-        double userMoney = EconomyUtil.getMoneyByUser(user);
+        double userMoney = petInfo.getPetTechPoint();
 
         if (item == null) {
             subject.sendMessage(new QuoteReply(msg).plus("物品不存在"));
@@ -25,7 +24,7 @@ public class ShopManager {
         }
 
         if (userMoney < item.getPrice()) {
-            subject.sendMessage(new QuoteReply(msg).plus("金币不足"));
+            subject.sendMessage(new QuoteReply(msg).plus("技术点不足"));
             return;
         }
 

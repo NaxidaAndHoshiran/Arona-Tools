@@ -1,4 +1,4 @@
-package cn.travellerr.aronaTools.electronicPets.task;
+package cn.travellerr.aronaTools.electronicPets.use.task;
 
 import cn.hutool.core.date.BetweenFormatter;
 import cn.hutool.core.date.DateUnit;
@@ -115,6 +115,6 @@ public class TaskManager {
         petInfo.setTaskId(0);
         petInfo.save();
 
-        subject.sendMessage(new QuoteReply(message).plus("任务结束：" + task.getName() + "\n任务时长：" + usedTime + "分钟\n金币奖励：" + task.getMoneyPerMin() * usedTime + "\n经验奖励：" + task.getExpPerMin() * usedTime + "\n心情奖励：" + task.getMoodPerMin() * usedTime));
+        subject.sendMessage(new QuoteReply(message).plus("任务结束：" + task.getName() + "\n任务时长：" + usedTime + "分钟\n技术点奖励：" + task.getMoneyPerMin() * usedTime + "\n经验奖励：" + task.getExpPerMin() * usedTime + "\n心情奖励：" + task.getMoodPerMin() * usedTime));
     }
 }

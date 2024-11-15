@@ -2,9 +2,9 @@ package cn.travellerr.aronaTools.command
 
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.echoCaves.EchoManager
-import cn.travellerr.aronaTools.electronicPets.PetManager
-import cn.travellerr.aronaTools.electronicPets.shop.WorkShopItemManager
-import cn.travellerr.aronaTools.electronicPets.task.WorkShopTaskManager
+import cn.travellerr.aronaTools.electronicPets.use.PetManager
+import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
+import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId

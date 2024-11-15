@@ -1,8 +1,8 @@
-package cn.travellerr.aronaTools.electronicPets;
+package cn.travellerr.aronaTools.electronicPets.use;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.chahuyun.hibernateplus.HibernateFactory;
-import cn.travellerr.aronaTools.electronicPets.type.PetType;
+import cn.travellerr.aronaTools.electronicPets.use.type.PetType;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import cn.travellerr.aronaTools.shareTools.Log;
 import net.mamoe.mirai.Bot;
@@ -39,7 +39,7 @@ public class PetManager {
                 .petType(petType)
                 .petMaxHp(petType.getDefaultMaxHp())
                 .petHp(Double.valueOf(petType.getDefaultMaxHp()))
-
+                .valueChangePerMin(petType.getValueChangePerMin())
                 .build();
 
         Log.debug("petInfoMsg: " + petInfo.getPetName());
@@ -200,6 +200,6 @@ public class PetManager {
         petInfo.addPetCoin(money * petConfig.getExchangePetMoney());
         savePetInfo(petInfo);
 
-        subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为宠物币：" + money * petConfig.getExchangePetMoney()) + "\n当前宠物币：" + petInfo.getPetCoin());
+        subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为技术点：" + money * petConfig.getExchangePetMoney()) + "\n当前技术点：" + petInfo.getPetTechPoint());
     }
 }

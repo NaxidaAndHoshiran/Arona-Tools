@@ -1,4 +1,4 @@
-package cn.travellerr.aronaTools.electronicPets.type;
+package cn.travellerr.aronaTools.electronicPets.use.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

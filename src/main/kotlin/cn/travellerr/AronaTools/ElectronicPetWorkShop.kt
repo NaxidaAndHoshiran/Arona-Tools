@@ -1,9 +1,9 @@
 package cn.travellerr.aronaTools
 
-import cn.travellerr.aronaTools.electronicPets.shop.Item
-import cn.travellerr.aronaTools.electronicPets.task.Task
-import cn.travellerr.aronaTools.electronicPets.type.ItemType
-import cn.travellerr.aronaTools.electronicPets.type.TaskType
+import cn.travellerr.aronaTools.electronicPets.use.shop.Item
+import cn.travellerr.aronaTools.electronicPets.use.task.Task
+import cn.travellerr.aronaTools.electronicPets.use.type.ItemType
+import cn.travellerr.aronaTools.electronicPets.use.type.TaskType
 import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value

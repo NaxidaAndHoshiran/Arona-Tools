@@ -4,7 +4,7 @@ import cn.chahuyun.hibernateplus.HibernateFactory;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.travellerr.aronaTools.electronicPets.type.PetType;
+import cn.travellerr.aronaTools.electronicPets.use.type.PetType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -38,7 +38,7 @@ public class PetInfo {
     private Long userId;
 
     @Builder.Default
-    private Double petCoin = 0.0;
+    private Double petTechPoint = 100.0;
     /**
      * 宠物名称
      */
@@ -119,6 +119,8 @@ public class PetInfo {
      */
     @Builder.Default
     private Double petRelationship = 0.00;
+
+    private Double valueChangePerMin;
     /**
      * 宠物是否正在睡觉
      */
@@ -148,6 +150,7 @@ public class PetInfo {
     @Builder.Default
     private Date taskStartTime = new Date(0);
 
+
     /**
      * 获取宠物信息的字符串表示
      *
@@ -159,12 +162,13 @@ public class PetInfo {
                 "宠物名称: " + this.petName + "\n" +
                 "等级: " + this.petLevel + "\n" +
                 "经验值: " + this.petExp + "/" + this.petMaxExp + "\n" +
+                "技术点: " + df.format(this.petTechPoint) + "\n" +
                 "生命值: " + df.format(this.petHp) + "/" + this.petMaxHp + "\n" +
                 "饥饿值: " + df.format(this.petHunger) + "/" + this.petMaxHunger + "\n" +
                 "心情值: " + df.format(this.petMood) + "/" + this.petMaxMood + "\n" +
                 "健康度: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
                 "能量值: " + df.format(this.petEnergy) + "/" + this.petMaxEnergy + "\n" +
-                "每分钟变化值: " + this.petType.getValueChangePerMin() + "\n" +
+                "每分钟变化值: " + this.getValueChangePerMin() + "\n" +
                 (this.isSleeping ? "宠物正在睡觉\n" : "") +
                 (this.isSick ? "宠物生病了\n" : ""));
     }
@@ -194,12 +198,12 @@ public class PetInfo {
      */
     private void updateHunger(Long timeDifference) {
         if (this.petHunger > 0) {
-            this.petHunger -= timeDifference * this.petType.getValueChangePerMin();
+            this.petHunger -= timeDifference * this.getValueChangePerMin();
             if (this.petHunger < 0) {
                 this.petHunger = 0.0;
             }
         } else {
-            this.petHp -= timeDifference * this.petType.getValueChangePerMin();
+            this.petHp -= timeDifference * this.getValueChangePerMin();
         }
         this.petHunger = Double.parseDouble(df.format(this.petHunger));
         this.petHp = Double.parseDouble(df.format(this.petHp));
@@ -212,7 +216,7 @@ public class PetInfo {
      */
     private void updateMood(Long timeDifference) {
         double floatValue = RandomUtil.randomDouble(0, 2);
-        double needChange = timeDifference * this.petType.getValueChangePerMin() + floatValue;
+        double needChange = timeDifference * this.getValueChangePerMin() + floatValue;
 
         if (this.petMood > 0) {
             this.petMood -= needChange;
@@ -234,7 +238,7 @@ public class PetInfo {
      */
     private void updateClean(Long timeDifference) {
         double floatValue = RandomUtil.randomDouble(0, 1.5);
-        double needChange = timeDifference * this.petType.getValueChangePerMin() + floatValue;
+        double needChange = timeDifference * this.getValueChangePerMin() + floatValue;
 
         if (this.petHealth > 0) {
             this.petHealth -= needChange;
@@ -267,7 +271,7 @@ public class PetInfo {
                 this.petMood > this.petMaxMood * 0.5 &&
                 this.petHealth > this.petMaxHealth * 0.6
         ) {
-            this.petHp += this.petType.getValueChangePerMin() * 2 * timeDifference;
+            this.petHp += this.getValueChangePerMin() * 2 * timeDifference;
         }
 
         if (this.petHp < 0) {
@@ -373,8 +377,8 @@ public class PetInfo {
      * @param amount 增加的金币数量
      */
     public void addPetCoin(double amount) {
-        this.petCoin += amount;
-        this.petCoin = Double.parseDouble(df.format(this.petCoin));
+        this.petTechPoint += amount;
+        this.petTechPoint = Double.parseDouble(df.format(this.petTechPoint));
     }
 
 
@@ -390,6 +394,9 @@ public class PetInfo {
             this.petMaxMood = (int) (this.petMaxMood * 1.2);
             this.petMaxHealth = (int) (this.petMaxHealth * 1.1);
             this.petRelationship += 0.5 * this.petLevel;
+            if (this.petLevel % 5 == 0) {
+                this.valueChangePerMin += 0.05;
+            }
         }
     }
 

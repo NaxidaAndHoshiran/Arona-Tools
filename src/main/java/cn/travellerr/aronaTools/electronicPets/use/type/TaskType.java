@@ -1,4 +1,4 @@
-package cn.travellerr.aronaTools.electronicPets.type;
+package cn.travellerr.aronaTools.electronicPets.use.type;
 
 import kotlinx.serialization.Serializable;
 import lombok.AllArgsConstructor;

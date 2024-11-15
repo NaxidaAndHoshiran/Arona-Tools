@@ -1,8 +1,8 @@
-package cn.travellerr.aronaTools.electronicPets.shop;
+package cn.travellerr.aronaTools.electronicPets.use.shop;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.AronaTools;
-import cn.travellerr.aronaTools.electronicPets.type.ItemType;
+import cn.travellerr.aronaTools.electronicPets.use.type.ItemType;
 import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;

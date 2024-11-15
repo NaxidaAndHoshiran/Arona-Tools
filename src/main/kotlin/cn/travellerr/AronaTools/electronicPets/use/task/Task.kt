@@ -1,6 +1,6 @@
-package cn.travellerr.aronaTools.electronicPets.task
+package cn.travellerr.aronaTools.electronicPets.use.task
 
-import cn.travellerr.aronaTools.electronicPets.type.TaskType
+import cn.travellerr.aronaTools.electronicPets.use.type.TaskType
 import kotlinx.serialization.Serializable
 
 @Serializable

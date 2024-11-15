@@ -1,6 +1,6 @@
-package cn.travellerr.aronaTools.electronicPets.shop
+package cn.travellerr.aronaTools.electronicPets.use.shop
 
-import cn.travellerr.aronaTools.electronicPets.type.ItemType
+import cn.travellerr.aronaTools.electronicPets.use.type.ItemType
 import kotlinx.serialization.Serializable
 
 @Serializable

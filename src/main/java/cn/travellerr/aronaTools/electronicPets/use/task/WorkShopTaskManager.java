@@ -1,8 +1,8 @@
-package cn.travellerr.aronaTools.electronicPets.task;
+package cn.travellerr.aronaTools.electronicPets.use.task;
 
 import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.AronaTools;
-import cn.travellerr.aronaTools.electronicPets.type.TaskType;
+import cn.travellerr.aronaTools.electronicPets.use.type.TaskType;
 import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;

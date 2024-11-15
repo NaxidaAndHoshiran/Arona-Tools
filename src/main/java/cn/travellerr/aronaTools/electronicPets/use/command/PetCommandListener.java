@@ -1,9 +1,9 @@
-package cn.travellerr.aronaTools.electronicPets.command;
+package cn.travellerr.aronaTools.electronicPets.use.command;
 
-import cn.travellerr.aronaTools.electronicPets.PetManager;
-import cn.travellerr.aronaTools.electronicPets.shop.ShopManager;
-import cn.travellerr.aronaTools.electronicPets.task.TaskManager;
-import cn.travellerr.aronaTools.electronicPets.type.PetType;
+import cn.travellerr.aronaTools.electronicPets.use.PetManager;
+import cn.travellerr.aronaTools.electronicPets.use.shop.ShopManager;
+import cn.travellerr.aronaTools.electronicPets.use.task.TaskManager;
+import cn.travellerr.aronaTools.electronicPets.use.type.PetType;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import cn.travellerr.aronaTools.shareTools.BuildCommand;
 import cn.travellerr.aronaTools.shareTools.Log;

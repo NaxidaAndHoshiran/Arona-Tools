@@ -60,7 +60,7 @@ public class MessageUtil {
             subject.sendMessage(new QuoteReply(message).plus("消息过长"));
             return "";
         }
-        if (textMsg.contains(" ")) {
+        if (textMsg.isBlank()) {
             subject.sendMessage(new QuoteReply(message).plus("请勿发送空格"));
             return "";
         }

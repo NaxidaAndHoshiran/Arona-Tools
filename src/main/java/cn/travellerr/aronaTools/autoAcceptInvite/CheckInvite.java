@@ -114,7 +114,7 @@ public class CheckInvite {
 
         String moneyMsg = "金币数量(使用#个人信息 查看) >= 300 (目前 %金币%)";
 
-        String loveMsg = "好感经验(使用#好感度 查看) >= 380 (目前 %好感度% 经验)";
+        String loveMsg = "好感经验(使用#好感度 查看) >= " + config.getLove() + " (目前 %好感度% 经验)";
 
         String groupMsg = "尝试加入 什亭之匣群聊(626860767)";
 

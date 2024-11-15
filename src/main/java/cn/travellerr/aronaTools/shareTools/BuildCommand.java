@@ -1,4 +1,4 @@
-package cn.travellerr.aronaTools.electronicPets.command;
+package cn.travellerr.aronaTools.shareTools;
 
 import kotlin.sequences.SequencesKt;
 import kotlin.text.MatchResult;

@@ -1,5 +1,6 @@
 package cn.travellerr.aronaTools.electronicPets.use.type;
 
+import cn.travellerr.aronaTools.electronicPets.fight.type.AttributeType;
 import cn.travellerr.aronaTools.shareTools.Log;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,10 +51,14 @@ public enum PetType {
 
     TAFFY("永雏塔菲", 1000, 0.1, 100, "关注永雏塔菲喵，关注永雏塔菲谢谢喵~", AttributeType.MODEL),
 
+    OTTO("电棍otto", 1000, 0.1, 100, "冲刺！冲刺！冲！", AttributeType.EXCEPTION),
+
     // 几个傻冒让我加的
     WEIYULINXI("苿雨林汐", 10, 1.0, 50, "私のオナニーお見でください", AttributeType.PROGRAM),
 
     Q10("Q10", 1, 5.0, 10, "啊……那里……那里不行……不要……噫！要……要坏掉了……", AttributeType.PROGRAM),
+
+    ZY("中烟", 500, 2.5, 250, "帅！中烟！帅！", AttributeType.NULL),
 
     COPILOT("副驾驶", 3000, 1.0, 300, "Github Copilot 是由 Microsoft 和 OpenAI 合作开发的人工智能代码提示工具，它可以根据上下文提示代码，帮助程序员提高编程效率。", AttributeType.CODE),
 

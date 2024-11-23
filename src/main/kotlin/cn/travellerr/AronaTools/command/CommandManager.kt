@@ -1,17 +1,17 @@
 package cn.travellerr.aronaTools.command
 
+import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.echoCaves.EchoManager
 import cn.travellerr.aronaTools.electronicPets.use.PetManager
 import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
 import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
+import cn.travellerr.aronaTools.entity.PetInfo
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.QuoteReply
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 
 object CheckKey  :
     SimpleCommand(AronaTools.INSTANCE as CommandOwner, "认证", "认证发电用户") {
@@ -268,5 +268,30 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         petInfo.save()
 
         subject.sendMessage("增加了${exp}点经验")
+    }
+}
+
+object Pet : CompositeCommand(AronaTools.INSTANCE, "pet", "宠物", "宠物系统", "宠物系统管理", "宠物管理", description = "宠物系统管理指令") {
+    @SubCommand("获取", "获取宠物", "获取宠物列表")
+    suspend fun getPet(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val bot = context.sender.bot!!
+
+        val petList = HibernateFactory.selectList(PetInfo::class.java)
+
+        if (petList.isEmpty()) {
+            subject.sendMessage(QuoteReply(context.originalMessage).plus("系统中还没有宠物"))
+            return
+        }
+
+        val forwardMsg = ForwardMessageBuilder(subject)
+
+
+        for (pet in petList) {
+            val message = PlainText("宠物所有者: ${pet.userId}\n").plus(pet.safeInfoMessage())
+            forwardMsg.add(bot, message)
+        }
+
+            subject.sendMessage(forwardMsg.build())
     }
 }

@@ -52,7 +52,7 @@ public class PetManager {
     public static void checkPet(Contact subject, MessageChain msg, Long userId) {
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, userId);
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
 
@@ -73,7 +73,7 @@ public class PetManager {
 
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, userId);
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
 
@@ -89,7 +89,7 @@ public class PetManager {
 
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, userId);
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(msg).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
 
@@ -114,11 +114,12 @@ public class PetManager {
     public static void sleepPet(Contact subject, MessageChain message, User sender) {
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
+        petInfo.update();
         if (petInfo.getIsSleeping()) {
-            subject.sendMessage(new QuoteReply(message).plus("宠物已经在睡觉了！"));
+            subject.sendMessage(new QuoteReply(message).plus("宠物已经在睡觉了！\n请发送 \"#唤醒宠物\" 来唤醒它！"));
             return;
         }
         if (petInfo.getIsDead()) {
@@ -126,11 +127,10 @@ public class PetManager {
             return;
         }
         if (petInfo.getTaskId() != 0) {
-            subject.sendMessage(new QuoteReply(message).plus("宠物正在执行任务！请先结束任务！"));
+            subject.sendMessage(new QuoteReply(message).plus("宠物正在执行任务！请先发送 \"#结束任务\" 来结束任务！"));
             return;
         }
 
-        petInfo.update();
         petInfo.setIsSleeping(true);
         HibernateFactory.merge(petInfo);
 
@@ -140,10 +140,11 @@ public class PetManager {
     public static void awakePet(Contact subject, MessageChain message, User sender) {
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(message).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
 
+        petInfo.update();
         petInfo.setIsSleeping(false);
         HibernateFactory.merge(petInfo);
 
@@ -168,7 +169,9 @@ public class PetManager {
                     .plus("\n")
                     .plus("每分钟变化：" + petType.getValueChangePerMin())
                     .plus("\n")
-                    .plus("描述：" + petType.getDescription());
+                    .plus("描述：" + petType.getDescription())
+                    .plus("\n")
+                    .plus("属性：" + petType.getAttributeType().getName());
             builder.add(bot, message);
         }
 
@@ -190,7 +193,7 @@ public class PetManager {
 
         PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
         if (petInfo == null) {
-            subject.sendMessage(new QuoteReply(originalMessage).plus("您还没有宠物哦！"));
+            subject.sendMessage(new QuoteReply(originalMessage).plus("您还没有宠物哦！\n请发送 \"#领养宠物 宠物名 宠物种类\" 来创建一个吧！"));
             return;
         }
 
@@ -200,6 +203,6 @@ public class PetManager {
         petInfo.addPetCoin(money * petConfig.getExchangePetMoney());
         savePetInfo(petInfo);
 
-        subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为技术点：" + money * petConfig.getExchangePetMoney()) + "\n当前技术点：" + petInfo.getPetTechPoint());
+        subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为技术点：" + money * petConfig.getExchangePetMoney() + "\n当前技术点：" + petInfo.getPetTechPoint()));
     }
 }

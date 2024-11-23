@@ -19,7 +19,7 @@ public class ShopManager {
         double userMoney = petInfo.getPetTechPoint();
 
         if (item == null) {
-            subject.sendMessage(new QuoteReply(msg).plus("物品不存在"));
+            subject.sendMessage(new QuoteReply(msg).plus("物品不存在\n请发送 \"#物品列表\" 查看物品列表"));
             return;
         }
 

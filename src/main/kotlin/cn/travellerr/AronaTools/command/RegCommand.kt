@@ -14,5 +14,6 @@ object RegCommand {
         CommandManager.registerCommand(VerifyPetTaskWorkShop)
         CommandManager.registerCommand(VerifyPetItemWorkShop)
         CommandManager.registerCommand(Tester)
+        CommandManager.registerCommand(Pet)
     }
 }

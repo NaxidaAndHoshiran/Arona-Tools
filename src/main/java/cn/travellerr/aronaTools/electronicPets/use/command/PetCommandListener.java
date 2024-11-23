@@ -35,7 +35,7 @@ public class PetCommandListener extends SimpleListenerHost {
     private final Regex endTaskCommand = BuildCommand.createCommand("结束任务|放弃任务|取消任务");
     private final Regex buyItemCommand = BuildCommand.createCommand("购买物品|购买道具", Integer.class);
 
-    private final Regex userMoneyToPetCoinCommand = BuildCommand.createCommand("金币兑换|兑换金币|兑换|转金币", Integer.class);
+    private final Regex userMoneyToPetCoinCommand = BuildCommand.createCommand("金币兑换|兑换科技点|兑换|转金币", Integer.class);
 
 
     @Override
@@ -101,7 +101,7 @@ public class PetCommandListener extends SimpleListenerHost {
         PetType petType = PetType.fromString(petTypeString);
 
         if (petType == null) {
-            subject.sendMessage("宠物种类不存在！");
+            subject.sendMessage("宠物种类不存在！\n请发送 \"#宠物列表\" 查看宠物种类");
             return;
         }
 
@@ -123,16 +123,28 @@ public class PetCommandListener extends SimpleListenerHost {
         List<String> key = BuildCommand.getEveryValue(startTaskCommand, message);
         int taskId = Integer.parseInt(key.get(0));
         PetInfo petInfo = PetManager.getPetInfo(sender.getId());
+        if (checkHasNotPet(subject, sender, originalMessage)) return;
         TaskManager.startTask(subject, originalMessage, petInfo, taskId);
     }
 
     private void handleCheckTaskCommand(Contact subject, User sender, MessageChain originalMessage) {
         PetInfo petInfo = PetManager.getPetInfo(sender.getId());
+        if (checkHasNotPet(subject, sender, originalMessage)) return;
         TaskManager.getTaskInfo(subject, originalMessage, petInfo);
     }
 
     private void handleEndTaskCommand(Contact subject, User sender, MessageChain originalMessage) {
         PetInfo petInfo = PetManager.getPetInfo(sender.getId());
+        if (checkHasNotPet(subject, sender, originalMessage)) return;
         TaskManager.endTask(subject, originalMessage, petInfo);
+    }
+
+    private boolean checkHasNotPet(Contact subject, User sender, MessageChain originalMessage) {
+        PetInfo petInfo = PetManager.getPetInfo(sender.getId());
+        if (petInfo == null) {
+            subject.sendMessage(new QuoteReply(originalMessage).plus("您还没有宠物哦！"));
+            return true;
+        }
+        return false;
     }
 }

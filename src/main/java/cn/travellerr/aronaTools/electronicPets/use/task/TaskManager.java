@@ -87,13 +87,13 @@ public class TaskManager {
         }
         Task task = getTask(petInfo.getTaskId());
         if (task == null) {
-            subject.sendMessage(new QuoteReply(message).plus("任务不存在"));
+            subject.sendMessage(new QuoteReply(message).plus("任务不存在\n请发送 \"#任务列表\" 查看任务列表"));
             return;
         }
         if (petInfo.getIsSick()) {
             petInfo.setTaskId(0);
             petInfo.save();
-            subject.sendMessage(new QuoteReply(message).plus("宠物生病了，无法开始任务"));
+            subject.sendMessage(new QuoteReply(message).plus("宠物生病了，无法结束任务……\n任务已自动取消"));
             return;
         }
         if (petInfo.getIsSleeping()) {

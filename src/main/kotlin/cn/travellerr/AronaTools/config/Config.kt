@@ -6,6 +6,9 @@ import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 
 object Config : AutoSavePluginConfig("config") {
+    @ValueDescription("点歌所需金币")
+    var songMoney: Int by value(10)
+
     @ValueDescription("回声洞冷却时间(秒)")
     var echoCoolDown: Long by value(60L)
 

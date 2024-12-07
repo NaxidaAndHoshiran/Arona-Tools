@@ -5,11 +5,9 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.travellerr.aronaTools.electronicPets.use.type.PetType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import lombok.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.Date;
@@ -46,6 +44,7 @@ public class PetInfo {
     /**
      * 宠物类型
      */
+    @Enumerated(EnumType.STRING)
     private PetType petType;
     /**
      * 宠物等级
@@ -158,19 +157,34 @@ public class PetInfo {
      */
     public String infoMessage() {
         update();
+        return getString();
+    }
+
+    public String safeInfoMessage() {
+        return getString() + "\n" +
+                "上一次更新时间: " + DateUtil.formatDateTime(this.lastUpdateTime)
+                + "\n" + "是否绑定: " + this.isBind
+                + (this.taskId != 0 ? "\n" + "任务ID: " + this.taskId + "\n" + "任务开始时间: " + taskStartTime: "");
+
+    }
+
+    @NotNull
+    private String getString() {
         return (this.isDead ? "宠物已经死亡" :
                 "宠物名称: " + this.petName + "\n" +
-                "等级: " + this.petLevel + "\n" +
-                "经验值: " + this.petExp + "/" + this.petMaxExp + "\n" +
-                "技术点: " + df.format(this.petTechPoint) + "\n" +
-                "生命值: " + df.format(this.petHp) + "/" + this.petMaxHp + "\n" +
-                "饥饿值: " + df.format(this.petHunger) + "/" + this.petMaxHunger + "\n" +
-                "心情值: " + df.format(this.petMood) + "/" + this.petMaxMood + "\n" +
-                "健康度: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
-                "能量值: " + df.format(this.petEnergy) + "/" + this.petMaxEnergy + "\n" +
-                "每分钟变化值: " + this.getValueChangePerMin() + "\n" +
-                (this.isSleeping ? "宠物正在睡觉\n" : "") +
-                (this.isSick ? "宠物生病了\n" : ""));
+                        "宠物种类: " + this.petType.getPetType() + "\n" +
+                        "宠物属性: " + this.petType.getAttributeType().getName() + "\n" +
+                        "等级: " + this.petLevel + "\n" +
+                        "经验值: " + this.petExp + "/" + this.petMaxExp + "\n" +
+                        "科技点: " + df.format(this.petTechPoint) + "\n" +
+                        "生命值: " + df.format(this.petHp) + "/" + this.petMaxHp + "\n" +
+                        "饥饿值: " + df.format(this.petHunger) + "/" + this.petMaxHunger + "\n" +
+                        "心情值: " + df.format(this.petMood) + "/" + this.petMaxMood + "\n" +
+                        "健康度: " + df.format(this.petHealth) + "/" + this.petMaxHealth + "\n" +
+                        "能量值: " + df.format(this.petEnergy) + "/" + this.petMaxEnergy + "\n" +
+                        "每分钟变化值: " + this.getValueChangePerMin() + "\n" +
+                        (this.isSleeping ? "宠物正在睡觉\n" : "") +
+                        (this.isSick ? "宠物生病了\n" : ""));
     }
 
     /**
@@ -178,11 +192,16 @@ public class PetInfo {
      */
     public void update() {
         Long timeDifference = DateUtil.between(this.lastUpdateTime, new Date(), DateUnit.MINUTE);
-        if (timeDifference <= 1 || this.isSleeping || this.isDead) {
+
+        if (timeDifference <= 1) {
             return;
         }
 
         this.lastUpdateTime = new Date();
+
+        if (this.isSleeping || this.isDead) {
+            return;
+        }
         updateHunger(timeDifference);
         updateMood(timeDifference);
         updateClean(timeDifference);
@@ -386,16 +405,17 @@ public class PetInfo {
 
         if (this.petExp >= this.petMaxExp) {
             this.petExp = 0L;
-            this.petLevel++;
             this.petMaxExp = (long) (this.petMaxExp * Math.max(1.01, 1.4 - 0.0039 * Math.min(this.petLevel, 100)));
-            this.petMaxHp = (int) (this.petMaxHp * 1.1);
-            this.petMaxEnergy = (int) (this.petMaxEnergy * 1.1);
-            this.petMaxHunger = (int) (this.petMaxHunger * 1.1);
-            this.petMaxMood = (int) (this.petMaxMood * 1.2);
-            this.petMaxHealth = (int) (this.petMaxHealth * 1.1);
+            this.petMaxHp = this.petMaxHp + 30;
+            this.petMaxEnergy = this.petMaxEnergy + 30;
+            this.petMaxHunger = this.petMaxHunger + 30;
+            this.petMaxMood = this.petMaxMood + 30;
+            this.petMaxHealth = this.petMaxHealth + 30;
+            this.petLevel++;
             this.petRelationship += 0.5 * this.petLevel;
             if (this.petLevel % 5 == 0) {
                 this.valueChangePerMin += 0.05;
+                this.valueChangePerMin = Double.parseDouble(df.format(this.valueChangePerMin));
             }
         }
     }
@@ -407,5 +427,32 @@ public class PetInfo {
         this.petMood = Double.valueOf(this.petMaxMood);
         this.petHealth = Double.valueOf(this.petMaxHealth);
         this.petEnergy = Double.valueOf(this.petMaxEnergy);
+    }
+
+/*    public long getUserId() {
+        return this.userId;
+    }*/
+
+    public void reCalculate() {
+        this.petMaxExp = 200L;
+        for (int i = 0; i < this.petLevel; i++) {
+            double addExp = Math.max(1.01, 1.4 - 0.0039 * Math.min(i, 100));
+            this.petMaxExp = (long) (this.petMaxExp * addExp);
+        }
+        this.petMaxHp = this.petType.getDefaultMaxHp() + 30 * this.petLevel;
+        this.petMaxEnergy = 100 + 30 * this.petLevel;
+        this.petMaxHunger = 100 + 30 * this.petLevel;
+        this.petMaxMood = 100 + 30 * this.petLevel;
+        this.petMaxHealth = 100 + 30 * this.petLevel;
+
+        this.petHp = Math.min(this.petHp, this.petMaxHp);
+        this.petEnergy = Math.min(this.petEnergy, this.petMaxEnergy);
+        this.petHunger = Math.min(this.petHunger, this.petMaxHunger);
+        this.petMood = Math.min(this.petMood, this.petMaxMood);
+        this.petHealth = Math.min(this.petHealth, this.petMaxHealth);
+    }
+
+    public long getUserId() {
+        return this.userId;
     }
 }

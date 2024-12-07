@@ -6,6 +6,18 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 属性类型
+ * <pre>
+ * NULL
+ * EXCEPTION
+ * PROGRAM
+ * MODEL
+ * DATA
+ * ENTITY
+ * CODE
+ * </pre>
+ */
 @Getter
 @AllArgsConstructor
 public enum AttributeType {

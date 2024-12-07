@@ -12,7 +12,6 @@ import java.io.IOException;
 
 public class SendMenu {
     public static void sendMenuToFriend(FriendAddEvent event) {
-
         // 启用QQ
         if (event.getBot().getId() == 896603204) {
             Contact subject = event.getUser();
@@ -24,7 +23,11 @@ public class SendMenu {
 
                 // 发送消息
                 subject.sendMessage(new PlainText(event.getUser().getNick()
-                        + " Sensei您好！\n欢迎使用由 Travellerr 制作的 \"蔚蓝档案-阿洛娜\"机器人！\n请在使用之前仔细查看菜单！")
+                        + """
+                        Sensei您好！
+                        欢迎使用由 Travellerr 制作的 "蔚蓝档案-阿洛娜"机器人！
+                        请在使用之前仔细查看菜单！
+                        """)
                         .plus(image));
 
             } catch (IOException e) {
@@ -47,7 +50,14 @@ public class SendMenu {
                 // 发送消息
                 subject.sendMessage(new PlainText("来自 "
                         + event.getGroup().getName()
-                        + " 的Sensei们好！\n欢迎使用由 Travellerr 制作的 \"蔚蓝档案-阿洛娜\"机器人！\n请在使用之前仔细查看菜单！\n请注意，拉入本阿洛娜即视为同意以下内容: \nhttps://doc.hoshiran.tech/documentation/eula.html")
+                        + """
+                         的Sensei们好！
+                         欢迎使用由 Travellerr 制作的 "蔚蓝档案-阿洛娜"机器人！
+                         请在使用之前仔细查看菜单！
+                         若想订阅本群公告，请发送 "#添加公告"。
+                         请注意，拉入本阿洛娜即视为同意以下内容: https://doc.hoshiran.tech/documentation/eula.html
+                         """
+                    )
                         .plus(image));
 
             } catch (IOException e) {

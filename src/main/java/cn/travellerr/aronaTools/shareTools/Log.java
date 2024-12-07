@@ -17,13 +17,11 @@ public class Log {
     }
 
     public static void error(Object msg, IOException e) {
-        log.error(String.valueOf(msg));
-        e.fillInStackTrace();
+        log.error(String.valueOf(msg), e);
     }
 
     public static void error(Object msg, Throwable e) {
-        log.error(String.valueOf(msg));
-        e.fillInStackTrace();
+        log.error(String.valueOf(msg), e);
     }
 
     public static void error(Object msg) {

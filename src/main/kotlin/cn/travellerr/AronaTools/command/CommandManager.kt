@@ -2,6 +2,7 @@ package cn.travellerr.aronaTools.command
 
 import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.travellerr.aronaTools.AronaTools
+import cn.travellerr.aronaTools.broadcast.BroadCastManager
 import cn.travellerr.aronaTools.echoCaves.EchoManager
 import cn.travellerr.aronaTools.electronicPets.use.PetManager
 import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
@@ -20,7 +21,7 @@ object CheckKey  :
         val subject = context.sender.subject!!
         val user = context.sender.user!!
         AronaTools.INSTANCE.logger.info("${user.permitteeId}")
-        Subscribed.useKey(subject, user, key)
+        Subscribed.useKey(subject, user, context.originalMessage, key)
     }
     @Handler
     suspend fun useError(sender: CommandContext) {
@@ -294,4 +295,103 @@ object Pet : CompositeCommand(AronaTools.INSTANCE, "pet", "宠物", "宠物系�
 
             subject.sendMessage(forwardMsg.build())
     }
+
+    @SubCommand("重新计算")
+    suspend fun recalculate(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        val petList = HibernateFactory.selectList(PetInfo::class.java)
+
+        if (petList.isEmpty()) {
+            subject.sendMessage(QuoteReply(context.originalMessage).plus("系统中还没有宠物"))
+            return
+        }
+
+        for (pet in petList) {
+            pet.reCalculate()
+            pet.save()
+        }
+
+        subject.sendMessage("已重新计算所有宠物数值~")
+    }
+
+    @SubCommand("重新计算")
+    suspend fun recalculate(context: CommandContext, user: At) {
+        val subject = context.sender.subject!!
+        val userId = user.target
+
+        val petInfo = HibernateFactory.selectOne(PetInfo::class.java, userId)
+
+        if (petInfo == null) {
+            subject.sendMessage(QuoteReply(context.originalMessage).plus("该用户没有宠物"))
+            return
+        }
+
+        petInfo.reCalculate()
+        petInfo.save()
+
+        subject.sendMessage("已重新计算该用户宠物数值~")
+        subject.sendMessage(petInfo.safeInfoMessage())
+    }
+}
+
+object BroadCast : SimpleCommand(AronaTools.INSTANCE, "broadcast", "广播", "全局广播", "全局消息", "发送公告", description = "全局广播") {
+
+    @Handler
+    suspend fun broadcast(context: CommandContext, vararg msg: String) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val originMsg : String = context.originalMessage.content.trim()
+        val prefix = originMsg.split(" ")[0]
+        val message = originMsg.removePrefix(prefix).trim()
+
+        if (message.isEmpty()) {
+            subject.sendMessage("请输入广播内容!")
+            return
+        }
+
+        if (user.id != 3132522039L) {
+            subject.sendMessage("你没有权限发送广播")
+            return
+        }
+
+        BroadCastManager.sendBroadCast(subject, message)
+
+
+        val replyMessage = MessageChainBuilder();
+
+        replyMessage.add(PlainText("广播开始发送!\n"))
+
+
+
+        subject.sendMessage(replyMessage.build())
+    }
+}
+
+object BroadCastManager : CompositeCommand(AronaTools.INSTANCE, "broadcastManager", "广播管理", "全局广播管理", "全局消息管理", "发送公告管理", description = "全局广播管理") {
+    @SubCommand("获取", "获取广播", "获取广播列表")
+    fun getBroadCast(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        BroadCastManager.BroadCastList(subject, context.originalMessage)
+
+
+    }
+
+/*    @SubCommand("删除", "删除广播", "删除广播列表")
+    suspend fun deleteBroadCast(context: CommandContext, id: Int) {
+        val subject = context.sender.subject!!
+
+        val broadCast = HibernateFactory.select(cn.travellerr.aronaTools.broadcast.BroadCast::class.java, id)
+
+        if (broadCast == null) {
+            subject.sendMessage("广播不存在")
+            return
+        }
+
+        broadCast.delete()
+
+        subject.sendMessage("广播已删除")
+    }*/
 }

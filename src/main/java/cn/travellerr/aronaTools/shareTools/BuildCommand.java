@@ -12,6 +12,8 @@ public class BuildCommand {
 
     static final String COMMAND_PREFIX = CommandManager.INSTANCE.getCommandPrefix();
 
+//    static final String COMMAND_PREFIX = "/";
+
     public static Regex createCommand(String commandStart, Class<?>... args) {
         StringBuilder regexBuilder = new StringBuilder("^" + COMMAND_PREFIX + "(" + commandStart + ")");
         for (Class<?> arg : args) {

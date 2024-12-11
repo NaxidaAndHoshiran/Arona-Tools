@@ -9,6 +9,7 @@ import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
 import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
 import cn.travellerr.aronaTools.entity.PetInfo
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
+import cn.travellerr.aronaTools.totp.TotpManager
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.Group
@@ -394,4 +395,61 @@ object BroadCastManager : CompositeCommand(AronaTools.INSTANCE, "broadcastManage
 
         subject.sendMessage("广播已删除")
     }*/
+}
+
+object Totp : CompositeCommand(AronaTools.INSTANCE, "totp", "二次验证", "二次认证", "二次验证管理", "二次认证管理", description = "二次验证管理") {
+    @SubCommand("获取", "获取二次验证", "获取二次认证")
+    fun getTotp(context: CommandContext, name: String) {
+        val messageChain = context.originalMessage
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+        TotpManager.get(user, name, messageChain, subject)
+    }
+
+    @SubCommand
+    suspend fun getTotpWithNonSubCommand(context: CommandContext, vararg msg: String) {
+
+        val messageChain = context.originalMessage
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+        if (msg.size > 1) {
+            subject.sendMessage(QuoteReply(messageChain).plus("请使用\"${CommandManager.commandPrefix}二次验证 获取 [名称]\"获取二次验证"))
+            return
+        }
+
+        TotpManager.get(user, msg.first(), messageChain, subject)
+    }
+
+
+    @SubCommand("删除", "删除二次验证", "删除二次认证")
+    suspend fun deleteTotp(context: CommandContext, name: String) {
+        val subject = context.sender.subject!!
+        val messageChain = context.originalMessage
+        val user = context.sender.user!!
+        if (context is Group) {
+            subject.sendMessage(QuoteReply(messageChain).plus("为了保障你的账号安全，请私信删除哦~"))
+            return
+        }
+        TotpManager.delete(user, name, messageChain, subject)
+    }
+
+    @SubCommand("添加", "添加二次验证", "添加二次认证")
+    suspend fun addTotp(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val messageChain = context.originalMessage
+        val user = context.sender.user!!
+        if (context is Group) {
+            subject.sendMessage(QuoteReply(messageChain).plus("为了保障你的账号安全，请私信添加哦~"))
+            return
+        }
+        TotpManager.use(user, messageChain, subject)
+    }
+
+    @SubCommand("列表", "二次验证列表", "二次认证列表")
+    fun listTotp(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+        TotpManager.list(user, subject)
+    }
+
 }

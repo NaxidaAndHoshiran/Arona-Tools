@@ -17,5 +17,6 @@ object RegCommand {
         CommandManager.registerCommand(Pet)
         CommandManager.registerCommand(BroadCast)
         CommandManager.registerCommand(BroadCastManager)
+        CommandManager.registerCommand(Totp)
     }
 }

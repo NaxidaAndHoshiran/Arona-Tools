@@ -20,7 +20,6 @@ import java.util.Date;
 @NoArgsConstructor
 public class Echo {
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;            // 回声洞ID
 
     private Long userId;        // 用户QQ号码

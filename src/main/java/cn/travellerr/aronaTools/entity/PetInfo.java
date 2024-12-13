@@ -429,10 +429,6 @@ public class PetInfo {
         this.petEnergy = Double.valueOf(this.petMaxEnergy);
     }
 
-/*    public long getUserId() {
-        return this.userId;
-    }*/
-
     public void reCalculate() {
         this.petMaxExp = 200L;
         for (int i = 0; i < this.petLevel; i++) {

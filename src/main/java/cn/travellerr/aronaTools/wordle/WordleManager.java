@@ -1,9 +1,12 @@
 package cn.travellerr.aronaTools.wordle;
 
+import cn.hutool.core.date.BetweenFormatter;
+import cn.hutool.core.date.DateUtil;
 import cn.travellerr.aronaTools.AronaTools;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -18,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -25,27 +30,38 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class WordleManager {
-    public static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    public static final ExecutorService executorService = Executors.newFixedThreadPool(20);
     private static final int[] X_COORDINATES = {103, 308, 511, 712, 915};
-    private static final int[] Y_COORDINATES = {170, 373, 575, 778, 980, 1183};
+    private static final int[] Y_COORDINATES = {170, 373, 575, 778, 980, 1183, 1388, 1590, 1791, 1994};
     private static final int BLOCK_SIZE = 191;
     public static CopyOnWriteArrayList<User> users = new CopyOnWriteArrayList<>();
+    public static CopyOnWriteArrayList<Group> groups = new CopyOnWriteArrayList<>();
 
-    public static void wordle(User sender, Contact subject, MessageChain chain) {
+
+    public static void wordle(Contact sender, Contact subject, MessageChain chain) {
         executorService.submit(() -> {
-            users.add(sender);
+            Date startTime = new Date();
+            ArrayList<Character> usedLetters = new ArrayList<>();
+
+            if (sender instanceof Group) {
+                groups.add((Group) sender);
+            } else {
+                users.add((User) sender);
+            }
+
             subject.sendMessage(new QuoteReply(chain).plus("""
                     欢迎来到 Wordle！
                     规则很简单：
-                    1. 你有 6 次机会猜出单词。
+                    1. 你有规定次机会猜出单词。
                     2. 你只能猜出 5 个字符长的单词。
                     3. 你将收到有关您的猜测的反馈：
                         - 单词中的字母正确且位置正确：绿色
                         - 单词中的字母是正确的，但位置错误：黄色
                         - 单词中没有字母：红色
-                    4. 如果你在 6 次机会内猜中单词，您就赢了。
-                    5. 你只有60秒的时间发送一个单词
-                    5. 玩得开心！
+                    4. 如果你在规定次机会内猜中单词，您就赢了。
+                    5. 你只有120秒的时间发送一个单词
+                    6. 若群聊中多人游玩，请在猜测前加上 "#" 符号
+                    7. 玩得开心！
                 """));
 
             try (InputStreamReader stream = new InputStreamReader(Objects.requireNonNull(AronaTools.INSTANCE.getResourceAsStream("wordle/words.json")))) {
@@ -61,36 +77,58 @@ public class WordleManager {
                     throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
                 }
 
-                for (int i = 0; i < 6; i++) {
-                    String guess = MessageUtil.getNextMessage(sender, subject, chain, 60, TimeUnit.SECONDS);
-                    if (guess.isBlank() || guess.length() != 5 || !words.getValid().contains(guess)) {
+                String lastFeedback = ".....";
+
+                int times = difficulty == 1 ? 10 : 6;
+
+                for (int i = 0; i < times; i++) {
+                    String guess = MessageUtil.getNextMessage(sender, subject, chain, 120, TimeUnit.SECONDS).toLowerCase(Locale.ROOT);
+                    if (guess.isBlank() || guess.isEmpty()) break;
+
+                    if (guess.length() != 5 || !words.getValid().contains(guess)) {
                         subject.sendMessage(MessageUtil.quoteReply(chain, "猜测无效。请输入一个有效的 5 个字母的单词。"));
                         i--;
                         continue;
                     }
 
-                    String feedback = getFeedback(word, guess);
+                    if (difficulty == 3 && guess.chars().anyMatch(c -> usedLetters.contains((char) c))) {
+                        subject.sendMessage(MessageUtil.quoteReply(chain, "猜测无效。请不要重复使用字母。"));
+                        i--;
+                        continue;
+                    }
+
+                    String feedback = getFeedback(word, guess, usedLetters);
                     Log.info("Wordle: " + guess + " Feedback: " + feedback);
                     picture = pictureBuilder(guess, feedback, picture, i);
                     BufferedImage sendPic = trimPicture(picture);
                     ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
                     ImageIO.write(sendPic, "png", imageStream);
-                    try ( imageStream;
-                         ExternalResource externalResource = ExternalResource.create(imageStream.toByteArray())) {
+                    try (imageStream; ExternalResource externalResource = ExternalResource.create(imageStream.toByteArray())) {
                         Image image = sender.uploadImage(externalResource);
                         if (guess.equals(word)) {
-                            subject.sendMessage(MessageUtil.quoteReply(chain, image.plus("祝贺！你猜对了这个词！单词为: " + word)));
+                            lastFeedback = feedback;
+                            Image addStamp = addStamp(sendPic, lastFeedback, subject);
+                            String time = DateUtil.formatBetween(startTime, new Date(), BetweenFormatter.Level.SECOND);
+
+                            subject.sendMessage(MessageUtil.quoteReply(chain, (addStamp == null ? image.plus("祝贺！你猜对了这个词！单词为: " + word + "\n 用时: " + time) : addStamp.plus("祝贺！你猜对了这个词！单词为: " + word + "\n 用时: " + time))));
                             return;
                         }
                         subject.sendMessage(MessageUtil.quoteReply(chain, image));
                     }
+                    lastFeedback = feedback;
                 }
-                subject.sendMessage(MessageUtil.quoteReply(chain, "你的机会已经用完了。这个词是：" + word));
+                int score = getScore(lastFeedback);
+                String time = DateUtil.formatBetween(startTime, new Date(), BetweenFormatter.Level.SECOND);
+                subject.sendMessage(MessageUtil.quoteReply(chain, "你的机会已经用完了。这个词是：" + word + "\n你的分数是：" + score + "\n 用时: " + time));
             } catch (Exception e) {
                 Log.error("出错啦~", e);
                 subject.sendMessage(new QuoteReply(chain).plus("出错啦~ 问题原因: " + e.getMessage()));
             } finally {
-                users.remove(sender);
+                if (sender instanceof Group) {
+                    groups.add((Group) sender);
+                } else {
+                    users.add((User) sender);
+                }
             }
         });
     }
@@ -100,17 +138,17 @@ public class WordleManager {
             int difficulty = Integer.parseInt(difficultyInput);
             if (difficulty < 1 || difficulty > 3) throw new IllegalArgumentException();
             return difficulty;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
             return 2; // Default to normal difficulty
         }
     }
 
-    private static String getFeedback(String word, String guess) {
+    private static String getFeedback(String word, String guess, ArrayList<Character> usedLetters) {
         StringBuilder feedback = new StringBuilder();
         for (int i = 0; i < 5; i++) {
             if (word.charAt(i) == guess.charAt(i)) feedback.append("+");
             else if (word.contains(String.valueOf(guess.charAt(i)))) feedback.append("-");
-            else feedback.append(".");
+            else { usedLetters.add(guess.charAt(i)); feedback.append("."); }
         }
         return feedback.toString();
     }
@@ -154,5 +192,34 @@ public class WordleManager {
             Log.error("出错啦~", e);
             return null;
         }
+    }
+
+    private static Image addStamp(BufferedImage image, String feedback, Contact subject) {
+        Graphics2D pen = image.createGraphics();
+        int score = getScore(feedback);
+        try (InputStream stream = AronaTools.INSTANCE.getResourceAsStream("wordle/stamp/" + score + ".png")) {
+            if (stream == null) throw new IllegalArgumentException("Invalid score: " + score);
+            BufferedImage stamp = ImageIO.read(stream);
+            pen.drawImage(stamp, image.getWidth() / 2 - stamp.getWidth() / 2, image.getHeight() / 2 - stamp.getHeight() / 2, null);
+            pen.dispose();
+            ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", imageStream);
+            try (imageStream; ExternalResource externalResource = ExternalResource.create(imageStream.toByteArray())) {
+                return subject.uploadImage(externalResource);
+            }
+        } catch (Exception e) {
+            Log.error("出错啦~", e);
+            return null;
+        }
+    }
+
+    private static int getScore(String feedback) {
+        int score = feedback.replace("+", "").length() * -20 + 100;
+        Log.info("Wordle: Score: " + score);
+        if (score < 30) score = 0;
+        else if (score < 59) score = 59;
+        else if (score < 90) score = 60;
+        else if (score < 100) score = 100;
+        return score;
     }
 }

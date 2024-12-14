@@ -455,9 +455,9 @@ object Totp : CompositeCommand(AronaTools.INSTANCE, "totp", "二次验证", "二
 
 }
 
-object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wordle游戏管理", description = "wordle游戏管理") {
+object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wordle游戏", description = "wordle游戏") {
     @Handler
-    suspend fun wordle(context: CommandContext, vararg msg: String) {
+    suspend fun wordle(context: CommandContext) {
         val subject = context.sender.subject!!
         val user = context.sender.user!!
 
@@ -469,5 +469,27 @@ object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wo
         }
 
         WordleManager.wordle(user, subject, message)
+    }
+}
+
+object GroupWordle : SimpleCommand(AronaTools.INSTANCE, "groupWordle", "wordle群组游戏", "wordle群组游戏", "群wordle", "群聊wordle", description = "wordle群组游戏") {
+    @Handler
+    suspend fun wordle(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val group = context.sender.getGroupOrNull()
+
+        if (group == null) {
+            subject.sendMessage("请在群组中使用")
+            return
+        }
+
+        val message = context.originalMessage
+
+        if (WordleManager.groups.contains(group)) {
+            subject.sendMessage("你已经在游戏中了")
+            return
+        }
+
+        WordleManager.wordle(group, subject, message)
     }
 }

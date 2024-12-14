@@ -6,6 +6,7 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.Message;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.QuoteReply;
@@ -77,6 +78,14 @@ public class MessageUtil {
     }
 
     public static Message quoteReply(MessageChain messageChain, String message) {
+        return new QuoteReply(messageChain).plus(message);
+    }
+
+    public static Message quoteReply(MessageChain messageChain, MessageChain message) {
+        return new QuoteReply(messageChain).plus(message);
+    }
+
+    public static Message quoteReply(MessageChain messageChain, Image message) {
         return new QuoteReply(messageChain).plus(message);
     }
 }

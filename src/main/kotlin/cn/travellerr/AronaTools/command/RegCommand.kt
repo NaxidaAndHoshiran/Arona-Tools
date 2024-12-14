@@ -18,5 +18,6 @@ object RegCommand {
         CommandManager.registerCommand(BroadCast)
         CommandManager.registerCommand(BroadCastManager)
         CommandManager.registerCommand(Totp)
+        CommandManager.registerCommand(Wordle)
     }
 }

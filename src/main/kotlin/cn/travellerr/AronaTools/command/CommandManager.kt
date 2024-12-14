@@ -10,6 +10,7 @@ import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
 import cn.travellerr.aronaTools.entity.PetInfo
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import cn.travellerr.aronaTools.totp.TotpManager
+import cn.travellerr.aronaTools.wordle.WordleManager
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.Group
@@ -360,7 +361,7 @@ object BroadCast : SimpleCommand(AronaTools.INSTANCE, "broadcast", "广播", "�
         BroadCastManager.sendBroadCast(subject, message)
 
 
-        val replyMessage = MessageChainBuilder();
+        val replyMessage = MessageChainBuilder()
 
         replyMessage.add(PlainText("广播开始发送!\n"))
 
@@ -452,4 +453,21 @@ object Totp : CompositeCommand(AronaTools.INSTANCE, "totp", "二次验证", "二
         TotpManager.list(user, subject)
     }
 
+}
+
+object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wordle游戏管理", description = "wordle游戏管理") {
+    @Handler
+    suspend fun wordle(context: CommandContext, vararg msg: String) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val message = context.originalMessage
+
+        if (WordleManager.users.contains(user)) {
+            subject.sendMessage("你已经在游戏中了")
+            return
+        }
+
+        WordleManager.wordle(user, subject, message)
+    }
 }

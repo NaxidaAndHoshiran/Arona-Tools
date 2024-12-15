@@ -16,10 +16,11 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.PlainText;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BroadCastManager {
 
-    public static Map<Date, Thread> threadList = new HashMap<>();
+    public static Map<Date, Thread> threadList = new ConcurrentHashMap<>();
 
     private static boolean hasPermission(Member member) {
         return member.getPermission().getLevel() >= 1;

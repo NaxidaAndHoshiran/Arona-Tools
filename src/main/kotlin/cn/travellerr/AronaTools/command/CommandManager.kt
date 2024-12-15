@@ -272,6 +272,16 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
 
         subject.sendMessage("增加了${exp}点经验")
     }
+
+    @SubCommand("清空wordle")
+    suspend fun clearWordle(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        WordleManager.users.clear()
+        WordleManager.groups.clear()
+
+        subject.sendMessage("已清空wordle")
+    }
 }
 
 object Pet : CompositeCommand(AronaTools.INSTANCE, "pet", "宠物", "宠物系统", "宠物系统管理", "宠物管理", description = "宠物系统管理指令") {
@@ -457,39 +467,44 @@ object Totp : CompositeCommand(AronaTools.INSTANCE, "totp", "二次验证", "二
 
 object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wordle游戏", description = "wordle游戏") {
     @Handler
-    suspend fun wordle(context: CommandContext) {
+    suspend fun wordle(context: CommandContext, vararg msg: String) {
         val subject = context.sender.subject!!
         val user = context.sender.user!!
 
         val message = context.originalMessage
 
-        if (WordleManager.users.contains(user)) {
-            subject.sendMessage("你已经在游戏中了")
+        val str = msg.joinToString("").trim()
+
+        if (str.isEmpty() || str.isBlank()) {
+
+            if (WordleManager.users.contains(user)) {
+                subject.sendMessage("你已经在游戏中了")
+                return
+            }
+
+            WordleManager.wordle(user, subject, message)
+
             return
+        } else if (str.matches("(groupWordle|合作|合作wordle|合作wordle游戏|wordle群组游戏|群wordle|群聊wordle)".toRegex())) {
+            val group = context.sender.getGroupOrNull()
+
+            if (group == null) {
+                subject.sendMessage("请在群组中使用")
+                return
+            }
+
+            if (WordleManager.groups.contains(group)) {
+                subject.sendMessage("你已经在游戏中了")
+                return
+            }
+
+            WordleManager.wordle(group, subject, message)
+        } else if (str.matches("(排名|排行榜|排行|wordle排行榜|wordle排行|wordle用户排行榜|wordle用户排行|用户排行榜|用户排行)".toRegex())) {
+            WordleManager.rank(subject, false)
+        } else if (str.matches("(groupRank|群排行榜|群排行|wordle群排行榜|wordle群排行|wordle群组排行榜|wordle群组排行|群组排行榜|群组排行)".toRegex())) {
+            WordleManager.rank(subject, true)
+        } else {
+            subject.sendMessage("未知指令")
         }
-
-        WordleManager.wordle(user, subject, message)
-    }
-}
-
-object GroupWordle : SimpleCommand(AronaTools.INSTANCE, "groupWordle", "wordle群组游戏", "wordle群组游戏", "群wordle", "群聊wordle", description = "wordle群组游戏") {
-    @Handler
-    suspend fun wordle(context: CommandContext) {
-        val subject = context.sender.subject!!
-        val group = context.sender.getGroupOrNull()
-
-        if (group == null) {
-            subject.sendMessage("请在群组中使用")
-            return
-        }
-
-        val message = context.originalMessage
-
-        if (WordleManager.groups.contains(group)) {
-            subject.sendMessage("你已经在游戏中了")
-            return
-        }
-
-        WordleManager.wordle(group, subject, message)
     }
 }

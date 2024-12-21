@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
+import java.time.temporal.ChronoUnit
 
 object CheckKey  :
     SimpleCommand(AronaTools.INSTANCE as CommandOwner, "认证", "认证发电用户") {
@@ -499,12 +500,22 @@ object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wo
             }
 
             WordleManager.wordle(group, subject, message)
-        } else if (str.matches("(排名|排行榜|排行|wordle排行榜|wordle排行|wordle用户排行榜|wordle用户排行|用户排行榜|用户排行)".toRegex())) {
-            WordleManager.rank(subject, false)
-        } else if (str.matches("(groupRank|群排行榜|群排行|wordle群排行榜|wordle群排行|wordle群组排行榜|wordle群组排行|群组排行榜|群组排行)".toRegex())) {
-            WordleManager.rank(subject, true)
+        } else if (str.matches("((日|周|月|年|day|week|month|year)?(rank|排名|排行榜|排行|wordle排行榜|wordle排行|wordle用户排行榜|wordle用户排行|用户排行榜|用户排行))".toRegex())) {
+            WordleManager.rank(subject, false, getChronoUnit(str))
+        } else if (str.matches("((日|周|月|年|day|week|month|year)?(groupRank|群排行榜|群排行|wordle群排行榜|wordle群排行|wordle群组排行榜|wordle群组排行|群组排行榜|群组排行))".toRegex())) {
+            WordleManager.rank(subject, true, getChronoUnit(str))
         } else {
             subject.sendMessage("未知指令")
+        }
+    }
+
+    private fun getChronoUnit(str: String): ChronoUnit {
+        return when {
+            str.matches("(日|day)".toRegex()) -> ChronoUnit.DAYS
+            str.matches("(周|week)".toRegex()) -> ChronoUnit.WEEKS
+            str.matches("(月|month)".toRegex()) -> ChronoUnit.MONTHS
+            str.matches("(年|year)".toRegex()) -> ChronoUnit.YEARS
+            else -> ChronoUnit.FOREVER
         }
     }
 }

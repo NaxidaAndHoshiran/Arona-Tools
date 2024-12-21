@@ -105,7 +105,7 @@ public class MessageUtil {
             subject.sendMessage(new QuoteReply(message).plus("操作已取消"));
             return "";
         }
-        return textMsg;
+        return textMsg.strip();
     }
 
     public static Message quoteReply(MessageChain messageChain, String message) {

@@ -49,7 +49,7 @@ public final class AronaTools extends JavaPlugin {
     @Override
     public void onDisable() {
         BroadCastManager.threadList.forEach((date, thread) -> thread.interrupt());
-        WordleManager.executorService.shutdownNow();
+        WordleManager.threadPoolExecutor.shutdownNow();
         Log.info("插件已卸载");
     }
 }

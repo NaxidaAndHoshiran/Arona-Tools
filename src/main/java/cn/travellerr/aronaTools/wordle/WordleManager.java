@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Wordle游戏管理类
@@ -149,7 +150,7 @@ public class WordleManager {
                     // 更新用户信息
                     WordleInfo userInfo = getWordleInfo(sender, difficulty);
                     if (userInfo.getWordleScore() < score ||
-                            (userInfo.getWordleScore() == score && userInfo.getWordleTime() > System.currentTimeMillis() - startTime.getTime()) || !DateUtil.isSameDay(userInfo.getCompleteDate(), new Date())) {
+                            (userInfo.getWordleScore() == score && userInfo.getWordleTime() > System.currentTimeMillis() - startTime.getTime())) {
                         userInfo.setWordleScore(score);
                         userInfo.setWordleTime(System.currentTimeMillis() - startTime.getTime());
                         HibernateFactory.merge(userInfo);
@@ -330,12 +331,19 @@ public class WordleManager {
      * @param chronoUnit 时间单位
      */
     public static void rank(Contact subject, boolean isGroup, ChronoUnit chronoUnit) {
-        List<WordleInfo> ranks = HibernateFactory.selectList(WordleInfo.class).stream()
-            .filter(wordleInfo -> wordleInfo.isGroup() == isGroup)
-            .filter(wordleInfo -> isSame(wordleInfo.getCompleteDate(), new Date(), chronoUnit))
-            .sorted(Comparator.comparingInt(WordleInfo::getWordleScore).reversed()
-                    .thenComparingLong(WordleInfo::getWordleTime))
-            .toList();
+        Map<Long, WordleInfo> highestScores = HibernateFactory.selectList(WordleInfo.class).stream()
+                .filter(wordleInfo -> wordleInfo.isGroup() == isGroup)
+                .filter(wordleInfo -> isSame(wordleInfo.getCompleteDate(), new Date(), chronoUnit))
+                .filter(wordleInfo -> wordleInfo.getDifficulty() == 2)
+                .collect(Collectors.toMap(
+                        WordleInfo::getUserId,
+                        wordleInfo -> wordleInfo,
+                        (existing, replacement) -> existing.getWordleScore() > replacement.getWordleScore() ? existing : replacement
+                ));
+
+        List<WordleInfo> ranks = new ArrayList<>(highestScores.values());
+        ranks.sort(Comparator.comparingInt(WordleInfo::getWordleScore).reversed()
+                .thenComparingLong(WordleInfo::getWordleTime));
 
         if (ranks.isEmpty()) {
             subject.sendMessage(new PlainText("暂无" + (isGroup ? "群聊" : "用户") + "参与游戏"));
@@ -345,7 +353,7 @@ public class WordleManager {
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
         AtomicInteger index = new AtomicInteger(1);
 
-        forwardMessageBuilder.add(subject.getBot(), new PlainText("Wordle 排行榜-" + (isGroup ? "群聊" : "用户") + " (更新时间：" + DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss") + ")\n"));
+        forwardMessageBuilder.add(subject.getBot(), new PlainText("Wordle 排行榜-普通难度-" + (isGroup ? "群聊" : "用户") + " (更新时间：" + DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss") + ")\n"));
         forwardMessageBuilder.add(subject.getBot(), new PlainText("共有 " + ranks.size() + " 位" + (isGroup ? "群聊" : "用户") + "参与了游戏\n"));
 
         ranks.forEach(wordleInfo -> forwardMessageBuilder.add(subject.getBot(), new PlainText("第 " + index.getAndIncrement() + " 名\n" + wordleInfo.getWordleRank())));
@@ -364,6 +372,7 @@ public class WordleManager {
         return HibernateFactory.selectList(WordleInfo.class, "userId", user.getId())
                 .stream()
                 .filter(info -> info.getDifficulty() == difficulty)
+                .filter(info -> DateUtil.isSameDay(info.getCompleteDate(), new Date()))
                 .min(Comparator.comparingInt(WordleInfo::getWordleScore).reversed()
                         .thenComparingLong(WordleInfo::getWordleTime))
                 .orElseGet(() -> {

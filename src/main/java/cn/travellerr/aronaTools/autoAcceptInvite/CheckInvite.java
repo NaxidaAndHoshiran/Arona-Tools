@@ -124,6 +124,15 @@ public class CheckInvite {
         Log.info(msg);
         owner.sendMessage(msg);
         User user = event.getBot().getFriend(event.getFromId());
+        if (user == null) {
+            for (Group group : getGroups(event.getBot())) {
+                user = group.get(event.getFromId());
+                if (user != null) {
+                    group.sendMessage(msg);
+                    break;
+                }
+            }
+        }
         if (user != null) user.sendMessage(msg);
     }
 

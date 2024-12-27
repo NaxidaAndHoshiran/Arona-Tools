@@ -13,11 +13,12 @@ import net.mamoe.mirai.utils.ExternalResource;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
 public class MenuListener extends SimpleListenerHost {
     @EventHandler
     public void onMessage(@NotNull MessageEvent event) {
-        String message = event.getMessage().contentToString();
+        String message = event.getMessage().contentToString().toLowerCase(Locale.ROOT);
         Contact subject = event.getSubject();
         MessageChain messageChain = event.getMessage();
 

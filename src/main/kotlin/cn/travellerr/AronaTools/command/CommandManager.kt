@@ -13,6 +13,7 @@ import cn.travellerr.aronaTools.totp.TotpManager
 import cn.travellerr.aronaTools.wordle.WordleManager
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
+import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import java.time.temporal.ChronoUnit
@@ -282,6 +283,17 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         WordleManager.groups.clear()
 
         subject.sendMessage("已清空wordle")
+    }
+
+    @SubCommand("重载配置", "重载配置文件", "reload")
+    suspend fun reloadConfig(context: CommandContext) {
+        val subject = context.sender.subject!!
+
+        AronaTools.INSTANCE.reloadPluginConfig(AronaTools.config)
+        AronaTools.INSTANCE.reloadPluginConfig(AronaTools.menuConfig)
+        AronaTools.INSTANCE.reloadPluginConfig(AronaTools.petConfig)
+
+        subject.sendMessage("已重载配置文件")
     }
 }
 

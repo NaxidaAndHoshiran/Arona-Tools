@@ -6,6 +6,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.travellerr.aronaTools.entity.GroupBroadCastInfo;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.aronaTools.shareTools.MessageUtil;
+import cn.travellerr.qzone.contact.QzoneBot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.Member;
@@ -114,6 +115,9 @@ public class BroadCastManager {
         Map<Long, Group> failedGroup = new HashMap<>();
 
         Thread thread = new Thread(() -> {
+            QzoneBot qZoneBot = new QzoneBot(subject.getBot());
+            qZoneBot.sendMessage(message);
+
             for (GroupBroadCastInfo groupBroadCastInfo : groupBroadCastInfoList) {
                 Group group = subject.getBot().getGroup(groupBroadCastInfo.getId());
                 if (group == null) {
@@ -137,7 +141,6 @@ public class BroadCastManager {
                 group.sendMessage(broadcastMessage);
                 groupBroadCastInfo.updateLastBroadCastTime();
                 HibernateFactory.merge(groupBroadCastInfo);
-
                 try {
 
                     // 线程休眠 10-60 秒

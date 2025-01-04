@@ -1,10 +1,13 @@
 package cn.travellerr.aronaTools.wordle;
 
+import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.chahuyun.hibernateplus.HibernateFactory;
 import cn.hutool.core.date.BetweenFormatter;
 import cn.hutool.core.date.DateUtil;
 import cn.travellerr.aronaTools.AronaTools;
+import cn.travellerr.aronaTools.entity.WordList;
 import cn.travellerr.aronaTools.entity.WordleInfo;
+import cn.travellerr.aronaTools.entity.Words;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
@@ -13,8 +16,6 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.ExternalResource;
-import wordle.entity.WordList;
-import wordle.entity.Words;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -84,8 +85,9 @@ public class WordleManager {
                 int difficulty = 2; // 难度
                 try (InputStreamReader stream = new InputStreamReader(Objects.requireNonNull(AronaTools.INSTANCE.getResourceAsStream("wordle/CET4-6.json")))) {
                     // 发送难度选择消息
-                    subject.sendMessage(MessageUtil.quoteReply(chain, "请选择难度：\n1. 简单(5个字母，10次机会)\n2. 普通(5个字母，6次机会)(默认)\n3. 困难(5个字母，6次机会，不允许重复字母)"));
+                    subject.sendMessage(MessageUtil.quoteReply(chain, "请选择难度：\n1. 简单(5个字母，10次机会)\n2. 普通(5个字母，6次机会)(默认，记录成绩)\n3. 困难(5个字母，6次机会，不允许重复字母)\n输入对应数字即可，或输入 exit 退出游戏"));
                     difficulty = parseDifficulty(MessageUtil.getNextMessage(sender, subject, chain, 60, TimeUnit.SECONDS)); // 解析难度
+                    if (difficulty == -1) return; // 退出游戏
                     WordList wordList = WordList.Companion.parse(stream); // 解析单词列表
                     Words wordObject = wordList.getRandomWord(); // 获取随机单词
                     String word = wordObject.getWord().toLowerCase(Locale.ROOT); // 获取单词
@@ -133,6 +135,11 @@ public class WordleManager {
                                 lastFeedback = feedback;
                                 Image addStamp = addStamp(sendPic, lastFeedback, subject);
                                 String time = DateUtil.formatBetween(startTime, new Date(), BetweenFormatter.Level.SECOND);
+
+                                if (sender instanceof User) {
+                                    int money = (int)(score / 10 * (100 - 95 * Math.min(1, Math.max(0, (System.currentTimeMillis() - startTime.getTime()) / 1000.0 / 180))) * (difficulty == 3 ? 1.5 : difficulty == 2 ? 1 : 0.5)) / 10;
+                                    EconomyUtil.plusMoneyToUser((User) sender, money);
+                                }
                                 subject.sendMessage(MessageUtil.quoteReply(chain, (addStamp == null ? image.plus("祝贺！你猜对了这个词！单词为: " + wordObject.getMessage() + "\n 用时: " + time) : addStamp.plus("祝贺！你猜对了这个词！单词为: " + wordObject.getMessage() + "\n 用时: " + time))));
                                 return;
                             }
@@ -147,20 +154,29 @@ public class WordleManager {
                     Log.error("出错啦~", e);
                     subject.sendMessage(new QuoteReply(chain).plus("出错啦~ 问题原因: " + e.getMessage()));
                 } finally {
-                    // 更新用户信息
-                    WordleInfo userInfo = getWordleInfo(sender, difficulty);
-                    if (userInfo.getWordleScore() < score ||
-                            (userInfo.getWordleScore() == score && userInfo.getWordleTime() > System.currentTimeMillis() - startTime.getTime())) {
-                        userInfo.setWordleScore(score);
-                        userInfo.setWordleTime(System.currentTimeMillis() - startTime.getTime());
-                        HibernateFactory.merge(userInfo);
-                        subject.sendMessage(new QuoteReply(chain).plus("恭喜你打破了自己的记录！"));
-                    }
-                    // 从列表中移除用户或群组
-                    if (sender instanceof Group) {
-                        groups.remove((Group) sender);
+                    if (difficulty == -1) {
+                        subject.sendMessage(new QuoteReply(chain).plus("游戏已退出"));
+
                     } else {
-                        users.remove((User) sender);
+                        // 更新用户信息
+                        WordleInfo userInfo = getWordleInfo(sender, difficulty);
+
+                        if (difficulty == 2 && (userInfo.getWordleScore() < score ||
+                                (userInfo.getWordleScore() == score && userInfo.getWordleTime() > System.currentTimeMillis() - startTime.getTime()))) {
+                            userInfo.setWordleScore(score);
+                            userInfo.setWordleTime(System.currentTimeMillis() - startTime.getTime());
+                            HibernateFactory.merge(userInfo);
+                            if (sender instanceof User) {
+                                EconomyUtil.plusMoneyToUser((User) sender, 30);
+                            }
+                            subject.sendMessage(new QuoteReply(chain).plus("恭喜你打破了自己的记录！" + (sender instanceof User ? "额外获得了 30 金币" : "")));
+                        }
+                        // 从列表中移除用户或群组
+                        if (sender instanceof Group) {
+                            groups.remove((Group) sender);
+                        } else {
+                            users.remove((User) sender);
+                        }
                     }
                 }
             });
@@ -178,6 +194,7 @@ public class WordleManager {
      */
     private static int parseDifficulty(String difficultyInput) {
         try {
+            if (difficultyInput.contains("exit")) return -1;
             int difficulty = Integer.parseInt(difficultyInput);
             if (difficulty < 1 || difficulty > 3) throw new IllegalArgumentException();
             return difficulty;

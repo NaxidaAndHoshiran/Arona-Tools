@@ -9,8 +9,8 @@ import cn.travellerr.aronaTools.AronaTools;
 import cn.travellerr.aronaTools.entity.Echo;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.entity.Favourite;
-import cn.travellerr.utils.FavorUtil;
-import cn.travellerr.utils.FavouriteManager;
+import cn.travellerr.favourite.FavorUtil;
+import cn.travellerr.favourite.FavouriteManager;
 import net.mamoe.mirai.console.command.CommandContext;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.contact.Contact;
@@ -94,6 +94,9 @@ public class EchoManager {
 
         Long id = HibernateFactory.selectList(Echo.class).stream().map(Echo::getId).max(Long::compareTo).orElse(0L) + 1;
 
+        if (message.matches("^[\\[【〖《「『<(].*[])】〗》」』>]$")) {
+            message = message.substring(1, message.length() - 1);
+        }
         Echo echo = Echo.builder()
                 .id(id)
                 .userId(userId)
@@ -151,7 +154,7 @@ public class EchoManager {
 
         List<Echo> filteredEchos = HibernateFactory.selectList(Echo.class)
                 .stream().filter(Echo::getIsApproved).filter(echo1 -> !echo1.getIsReported())
-                .collect(Collectors.toList());
+                .toList();
         if (filteredEchos.isEmpty()) {
             Log.error("没有可用回声! ");
             subject.sendMessage(new At(user.getId()).plus(" 出错啦~没有可用回声"));

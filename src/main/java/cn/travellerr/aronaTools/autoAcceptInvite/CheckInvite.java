@@ -4,7 +4,7 @@ import cn.chahuyun.economy.utils.EconomyUtil;
 import cn.travellerr.aronaTools.permission.PermissionController;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.entity.Favourite;
-import cn.travellerr.utils.FavouriteManager;
+import cn.travellerr.favourite.FavouriteManager;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.User;
@@ -131,6 +131,9 @@ public class CheckInvite {
                     group.sendMessage(msg);
                     break;
                 }
+            }
+            if (user == null && event.getFromGroup() != null) {
+                user = event.getFromGroup().get(event.getFromId());
             }
         }
         if (user != null) user.sendMessage(msg);

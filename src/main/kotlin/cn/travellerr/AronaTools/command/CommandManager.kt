@@ -4,6 +4,7 @@ import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.broadcast.BroadCastManager
 import cn.travellerr.aronaTools.echoCaves.EchoManager
+import cn.travellerr.aronaTools.electronicPets.fight.FightManager
 import cn.travellerr.aronaTools.electronicPets.use.PetManager
 import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
 import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
@@ -16,6 +17,7 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.*
 /*import top.mrxiaom.overflow.contact.RemoteBot
 import top.mrxiaom.overflow.message.data.Markdown*/
@@ -316,6 +318,14 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         AronaTools.INSTANCE.reloadPluginConfig(AronaTools.serviceConfig)
 
         subject.sendMessage("已重载配置文件")
+    }
+
+    @SubCommand("开始战斗")
+    fun startFight(context: CommandContext, user: User) {
+        val subject = context.sender.subject!!
+        val sender = context.sender.user!!
+
+        FightManager.startFight(subject, context.originalMessage, sender, user)
     }
 
 /*    @SubCommand("MD测试")

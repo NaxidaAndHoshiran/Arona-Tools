@@ -12,14 +12,18 @@ import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import cn.travellerr.aronaTools.totp.TotpManager
 import cn.travellerr.aronaTools.wordle.WordleManager
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
+/*import top.mrxiaom.overflow.contact.RemoteBot
+import top.mrxiaom.overflow.message.data.Markdown*/
 import java.time.temporal.ChronoUnit
 
 object CheckKey  :
-    SimpleCommand(AronaTools.INSTANCE as CommandOwner, "认证", "认证发电用户") {
+    SimpleCommand(AronaTools.INSTANCE, "认证", "认证发电用户", description = "认证发电用户") {
+
     @Handler
     fun useKey(context: CommandContext, key: String?) {
         val subject = context.sender.subject!!
@@ -86,14 +90,23 @@ object CreateEcho : SimpleCommand(AronaTools.INSTANCE,"createEcho",
 object GetEcho : SimpleCommand(AronaTools.INSTANCE,"getEcho",
     "回声", "回声洞" , "获取回声" ,"获取回声洞",
     description = "获取回声") {
+
+    @ExperimentalCommandDescriptors
+    override val prefixOptional: Boolean
+        get() = true
+
+
     @Handler
     suspend fun echo(context: CommandContext, vararg args: String) {
         val subject = context.sender.subject!!
         val user = context.sender.user!!
-
         val originMessage = context.originalMessage
 
-        val id = args.getOrNull(0)?.toLongOrNull()
+        var message = args.joinToString(" ").trim()
+        if (message.matches("^[\\[【〖《「『<(].*[])】〗》」』>]$".toRegex())) {
+            message = message.substring(1, message.length - 1)
+        }
+        val id = message.toLongOrNull()
         if (args.isEmpty()) {
             EchoManager.getRandomEcho(subject, user, originMessage)
             return
@@ -117,8 +130,12 @@ object DeleteEcho : SimpleCommand(AronaTools.INSTANCE,"deleteEcho",
     @Handler
     suspend fun echo(context: CommandContext, vararg args: String) {
         val subject = context.sender.subject!!
+        var message : String = args.joinToString(" ").trim()
+        if (message.matches("^[\\[【〖《「『<(].*[])】〗》」』>]$".toRegex())) {
+            message = message.substring(1, message.length - 1)
+        }
+        val id = message.toLongOrNull()
 
-        val id = args.getOrNull(0)?.toLongOrNull()
         if (id is Long) {
             EchoManager.deleteEcho(context, id)
             return
@@ -139,7 +156,11 @@ object ReportEcho : SimpleCommand(AronaTools.INSTANCE,"reportEcho",
         val subject = context.sender.subject!!
         val user = context.sender.user!!
 
-        val id = args.getOrNull(0)?.toLongOrNull()
+        var message : String = args.joinToString(" ").trim()
+        if (message.matches("^[\\[【〖《「『<(].*[])】〗》」』>]$".toRegex())) {
+            message = message.substring(1, message.length - 1)
+        }
+        val id = message.toLongOrNull()
         if (id is Long) {
             EchoManager.reportEcho(subject, user, id)
             return
@@ -287,14 +308,30 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
 
     @SubCommand("重载配置", "重载配置文件", "reload")
     suspend fun reloadConfig(context: CommandContext) {
-        val subject = context.sender.subject!!
+        val subject = context.sender
 
         AronaTools.INSTANCE.reloadPluginConfig(AronaTools.config)
         AronaTools.INSTANCE.reloadPluginConfig(AronaTools.menuConfig)
         AronaTools.INSTANCE.reloadPluginConfig(AronaTools.petConfig)
+        AronaTools.INSTANCE.reloadPluginConfig(AronaTools.serviceConfig)
 
         subject.sendMessage("已重载配置文件")
     }
+
+/*    @SubCommand("MD测试")
+    suspend fun testMd(context: CommandContext, actionPath: String, vararg msg: String) {
+        val subject = context.sender.subject!!
+        context.sender.user!!
+
+        val message = context.originalMessage.content.split(" ").drop(3).joinToString(" ").trim()
+
+        val bot = context.sender.bot as RemoteBot
+
+        bot.executeAction(actionPath, message)
+//
+//        val templateMarkdown = Markdown()
+    }*/
+
 }
 
 object Pet : CompositeCommand(AronaTools.INSTANCE, "pet", "宠物", "宠物系统", "宠物系统管理", "宠物管理", description = "宠物系统管理指令") {

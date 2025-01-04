@@ -10,6 +10,7 @@ import cn.travellerr.aronaTools.command.RegCommand;
 import cn.travellerr.aronaTools.config.Config;
 import cn.travellerr.aronaTools.config.MenuConfig;
 import cn.travellerr.aronaTools.config.PetConfig;
+import cn.travellerr.aronaTools.config.ServiceConfig;
 import cn.travellerr.aronaTools.electronicPets.use.command.PetCommandListener;
 import cn.travellerr.aronaTools.electronicPets.use.command.WorkShopCommandListener;
 import cn.travellerr.aronaTools.permission.PermissionController;
@@ -35,15 +36,21 @@ public class Initialize {
         eventEventChannel.registerListenerHost(new MenuListener());
 
         // 私用模块，请修改后使用
-        GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, CheckInvite::check);
-        GlobalEventChannel.INSTANCE.subscribeAlways(FriendAddEvent.class, SendMenu::sendMenuToFriend);
+        if (ServiceConfig.INSTANCE.getEnableAutoJoinGroup()) {
+            GlobalEventChannel.INSTANCE.subscribeAlways(BotInvitedJoinGroupRequestEvent.class, CheckInvite::check);
+        }
+        if (ServiceConfig.INSTANCE.getEnableAutoAddFriend()) {
+            GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, CheckInvite::checkFriendRequest);
+        }
 
         // 当机器人下线时，关闭所有的群广播线程
         GlobalEventChannel.INSTANCE.subscribeAlways(BotOfflineEvent.class, event -> BroadCastManager.threadList.values().forEach(Thread::interrupt));
 
         // 收到好友申请
-        GlobalEventChannel.INSTANCE.subscribeAlways(NewFriendRequestEvent.class, CheckInvite::checkFriendRequest);
-        GlobalEventChannel.INSTANCE.subscribeAlways(BotJoinGroupEvent.class, SendMenu::sendMenuToGroup);
+        if (ServiceConfig.INSTANCE.getEnableAutoSendMenu()) {
+            GlobalEventChannel.INSTANCE.subscribeAlways(FriendAddEvent.class, SendMenu::sendMenuToFriend);
+            GlobalEventChannel.INSTANCE.subscribeAlways(BotJoinGroupEvent.class, SendMenu::sendMenuToGroup);
+        }
     }
 
     private static void initConfigs() {
@@ -51,10 +58,12 @@ public class Initialize {
         AronaTools.INSTANCE.reloadPluginConfig(Config.INSTANCE);
         AronaTools.INSTANCE.reloadPluginConfig(PetConfig.INSTANCE);
         AronaTools.INSTANCE.reloadPluginConfig(MenuConfig.INSTANCE);
+        AronaTools.INSTANCE.reloadPluginConfig(ServiceConfig.INSTANCE);
 
         AronaTools.config = Config.INSTANCE;
         AronaTools.petConfig = PetConfig.INSTANCE;
         AronaTools.menuConfig = MenuConfig.INSTANCE;
+        AronaTools.serviceConfig = ServiceConfig.INSTANCE;
 
         AronaTools.INSTANCE.reloadPluginData(ElectronicPetWorkShop.INSTANCE);
         AronaTools.electronicPetWorkShop = ElectronicPetWorkShop.INSTANCE;

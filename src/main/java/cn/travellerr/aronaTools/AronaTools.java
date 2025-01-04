@@ -5,6 +5,7 @@ import cn.travellerr.aronaTools.components.Initialize;
 import cn.travellerr.aronaTools.config.Config;
 import cn.travellerr.aronaTools.config.MenuConfig;
 import cn.travellerr.aronaTools.config.PetConfig;
+import cn.travellerr.aronaTools.config.ServiceConfig;
 import cn.travellerr.aronaTools.shareTools.HibernateUtil;
 import cn.travellerr.aronaTools.shareTools.Log;
 import cn.travellerr.aronaTools.wordle.WordleManager;
@@ -20,6 +21,8 @@ public final class AronaTools extends JavaPlugin {
 
     public static MenuConfig menuConfig;
 
+    public static ServiceConfig serviceConfig;
+
     public static ElectronicPetWorkShop electronicPetWorkShop;
 
     private AronaTools() {
@@ -28,6 +31,7 @@ public final class AronaTools extends JavaPlugin {
                 .author("Travellerr")
                 .dependsOn("cn.chahuyun.HuYanEconomy", true)
                 .dependsOn("cn.travellerr.Favorability", true)
+                .dependsOn("cn.travellerr.qzone.Qzone", true)
                 .build());
     }
 

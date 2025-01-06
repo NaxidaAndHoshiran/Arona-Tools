@@ -4,6 +4,7 @@ import cn.travellerr.aronaTools.electronicPets.fight.type.AttributeType;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import lombok.Getter;
 import lombok.Setter;
+import net.mamoe.mirai.contact.User;
 
 /**
  * 代表一个战斗宠物的类
@@ -15,6 +16,8 @@ public class FightPet {
      * 宠物信息对象
      */
     private PetInfo petInfo;
+
+    private User user;
 
     /**
      * 宠物的生命值
@@ -48,14 +51,15 @@ public class FightPet {
      *
      * @param petInfo 宠物信息对象
      */
-    public FightPet(PetInfo petInfo) {
+    public FightPet(PetInfo petInfo, User user) {
         this.petInfo = petInfo;
+        this.user = user;
         this.attributeType = petInfo.getPetType().getAttributeType();
         this.Hp = petInfo.getPetHp();
         this.attack = petInfo.getPetEnergy();
         this.defend = petInfo.getPetHealth();
         this.speed = petInfo.getPetLevel() * petInfo.getValueChangePerMin() * 10;
-        this.cost = 10;
+        this.cost = 5;
     }
 
     public void addHp(double hp) {
@@ -80,5 +84,14 @@ public class FightPet {
         if (this.defend < 0) {
             this.defend = 0;
         }
+    }
+
+
+    public void addCost() {
+        this.cost += 1;
+    }
+
+    public void addCost(int cost) {
+        this.cost += cost;
     }
 }

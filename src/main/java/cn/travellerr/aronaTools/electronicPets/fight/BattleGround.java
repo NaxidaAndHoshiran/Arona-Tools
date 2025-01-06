@@ -2,11 +2,14 @@ package cn.travellerr.aronaTools.electronicPets.fight;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.travellerr.aronaTools.electronicPets.fight.factory.Battle;
+import cn.travellerr.aronaTools.electronicPets.fight.type.AttributeType;
 import cn.travellerr.aronaTools.entity.PetInfo;
+import cn.travellerr.aronaTools.shareTools.Log;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,12 +27,12 @@ public class BattleGround implements Battle {
     /**
      * 当前宠物
      */
-    private FightPet nowPet;
+    @NotNull private FightPet nowPet;
 
     /**
      * 下一个宠物
      */
-    private FightPet nextPet;
+    @NotNull private FightPet nextPet;
 
     /**
      * 上一个使用的技能
@@ -51,7 +54,7 @@ public class BattleGround implements Battle {
      * @param petInfo1 第一个宠物信息
      * @param petInfo2 第二个宠物信息
      */
-    public BattleGround(FightPet petInfo1, FightPet petInfo2) {
+    public BattleGround(@NotNull FightPet petInfo1, @NotNull FightPet petInfo2) {
         this.nowPet = petInfo1;
         this.nextPet = petInfo2;
     }
@@ -85,11 +88,19 @@ public class BattleGround implements Battle {
     @Override
     public String autoAttack() {
         // 获取可用技能列表
-        List<Skill> skillList = Arrays.stream(Skill.values()).filter(skill ->
-                (skill.getAttributeType()==null||
-                        skill.getAttributeType().equals(this.nowPet.getPetInfo().getPetType().getAttributeType())||
-                        Arrays.stream(skill.getPetType()).anyMatch(petType -> petType.equals(this.nowPet.getPetInfo().getPetType())))
-        ).toList();
+        // 使用`Arrays.stream(Skill.values())`将所有技能转换为流。
+        List<Skill> skillList = Arrays.stream(Skill.values())
+            // 过滤出属性类型不为空且与当前宠物属性类型匹配的技能，或技能适用于当前宠物类型。
+            .filter(skill -> (skill.getAttributeType() != null &&
+                    (skill.getAttributeType() == AttributeType.ALL ||
+                            skill.getAttributeType().equals(this.nowPet.getPetInfo().getPetType().getAttributeType())) ||
+                            Arrays.stream(skill.getPetType()).anyMatch(petType -> petType.equals(this.nowPet.getPetInfo().getPetType()))))
+            // 进一步过滤出技能消耗不超过当前宠物可用技能点的技能。
+            .filter(skill -> skill.getDefaultCost() <= this.nowPet.getCost())
+            // 按技能性价比排序（默认值/默认消耗）
+            .sorted((s1, s2) -> Double.compare((double) s2.getDefaultValue() / s2.getDefaultCost(), (double) s1.getDefaultValue() / s1.getDefaultCost()))
+            // 将过滤后的技能流转换为列表。
+            .toList();
 
         // 根据当前宠物的生命值和上一个技能类型选择技能
         if (nowPet.getHp() < nowPet.getPetInfo().getPetHp() * 0.3) {
@@ -100,23 +111,30 @@ public class BattleGround implements Battle {
             skillList = skillList.stream().filter(skill -> skill.getSkillType().equals(SkillType.ATTACK)).toList();
         }
 
+        Log.debug("选择技能");
+
         // 随机选择一个技能
         Skill skill = skillList.get((int) (Math.random() * skillList.size()));
+
+        Log.debug("随机选择技能: " + skill.getName());
 
         // 执行技能并获取伤害值
         int damage = action(skill);
 
+        Log.debug("执行技能");
+
         previousSkill = skill;
 
         // 返回攻击结果
-
+        Log.debug("返回攻击结果");
         return "自动攻击：\n" +
                 nowPet.getPetInfo().getPetName()
-                +" 使用 " + skill.getName() + (skill.getSkillType().equals(SkillType.ATTACK) ? " 对 "+ this.nextPet.getPetInfo().getPetName()+
+                +" 使用 " + skill.getName() + " 耗费 " + skill.getDefaultCost() + " cost" + (skill.getSkillType().equals(SkillType.ATTACK) ? " 对 "+ this.nextPet.getPetInfo().getPetName()+
                 " 造成了 "+damage+" 点伤害。\n" +
-                "当前 "+ this.nextPet.getPetInfo().getPetName()+" 的生命值："+ this.nextPet.getHp()+"\n" :
+                "当前 "+ this.nextPet.getPetInfo().getPetName()+" 的生命值："+ this.nextPet.getHp() :
                 (skill.getSkillType().equals(SkillType.DEFEND) ? " 进行了防御。\n" : " 进行了恢复。\n"+
-                        "当前 "+nowPet.getPetInfo().getPetName()+" 的生命值："+ this.nowPet.getHp()));
+                        "当前 "+nowPet.getPetInfo().getPetName()+" 的生命值："+ this.nowPet.getHp())) +
+                "\n当前 %user1% cost："+ this.nowPet.getCost();
     }
 
     /**
@@ -128,6 +146,9 @@ public class BattleGround implements Battle {
     public int action(Skill skill) {
         // 获取技能的默认值
         int value = skill.getDefaultValue();
+        this.nowPet.addCost(-skill.getDefaultCost()); // 扣除技能费
+
+        this.nowPet.addCost(); // 增加技能费
 
         // 根据技能类型执行不同的操作
         if (skill.getSkillType().equals(SkillType.ATTACK)) {
@@ -138,7 +159,7 @@ public class BattleGround implements Battle {
             } else if (againstResult == -1) {
                 value = (int) (value * 0.5); // 属性被克制，伤害减少50%
             }
-            this.nextPet.addHp(-skill.getDefaultValue()); // 扣除对方宠物的生命值
+            this.nextPet.addHp(-value); // 扣除对方宠物的生命值
         } else if (skill.getSkillType().equals(SkillType.DEFEND)) {
             nowPet.addDefend(skill.getDefaultValue()); // 增加防御值
         } else {
@@ -156,17 +177,22 @@ public class BattleGround implements Battle {
     @Override
     public String endBattle(PetInfo theSurrender) {
         // 确定战斗的胜利者
+        Log.debug("确定战斗胜利者");
         FightPet winner = (theSurrender == null)? (nowPet.getHp() > nextPet.getHp() ? nowPet : nextPet)
                 : (nowPet.getPetInfo().getPetName().equals(theSurrender.getPetName()) ? nextPet : nowPet);
 
+        Log.debug("确定战斗失败者");
         FightPet loser = (theSurrender == null)? (nowPet.getHp() > nextPet.getHp() ? nextPet : nowPet) : (nowPet.getPetInfo().getPetName().equals(theSurrender.getPetName()) ? nowPet : nextPet);
 
+        Log.debug("计算经验值和金币");
         PetInfo petInfoWin = winner.getPetInfo();
         PetInfo petInfoLose = loser.getPetInfo();
         int changeExp = (int) (petInfoLose.getPetExp() * (Math.random() * 0.2 + 0.1));
+
+        Log.debug("增加经验值和金币");
         petInfoWin.addExp(changeExp);
         petInfoLose.addExp(-changeExp);
-        int changeMoney = RandomUtil.randomInt(10,101);
+        int changeMoney = RandomUtil.randomInt(10, 101);
         petInfoWin.addPetCoin(changeMoney);
         petInfoLose.addPetCoin(-changeMoney);
 
@@ -212,9 +238,10 @@ public class BattleGround implements Battle {
     @Override
     public String selectSkill() {
         List<Skill> skillList = Arrays.stream(Skill.values()).filter(skill ->
-                (skill.getAttributeType()==null||
-                        skill.getAttributeType().equals(this.nowPet.getPetInfo().getPetType().getAttributeType())||
-                        Arrays.stream(skill.getPetType()).anyMatch(petType -> petType.equals(this.nowPet.getPetInfo().getPetType())))
+                skill.getAttributeType() != null &&(
+                skill.getAttributeType() == AttributeType.ALL ||
+                skill.getAttributeType().equals(this.nowPet.getPetInfo().getPetType().getAttributeType())) ||
+                Arrays.stream(skill.getPetType()).anyMatch(petType -> petType.equals(this.nowPet.getPetInfo().getPetType()))
         ).toList();
         List<String> skillNameList = skillList.stream().map(Skill::getSimplifiedInfo).toList();
 

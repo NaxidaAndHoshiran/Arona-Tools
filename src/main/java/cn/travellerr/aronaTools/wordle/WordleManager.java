@@ -108,7 +108,7 @@ public class WordleManager {
                         if (guess.isBlank() || guess.isEmpty()) break;
 
                         // 验证猜测的有效性
-                        if (guess.length() != 5 || !wordList.getValid().contains(guess)) {
+                        if (!guess.equals(word) && (guess.length() != 5 || !wordList.getValid().contains(guess))) {
                             subject.sendMessage(MessageUtil.quoteReply(chain, "猜测无效。请输入一个有效的 5 个字母的单词。"));
                             i--;
                             continue;

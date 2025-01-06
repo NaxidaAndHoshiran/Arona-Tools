@@ -69,6 +69,12 @@ public enum PetType {
 
     TOMORI("高松灯", 1000, 0.1, 100, "那……能陪我组一辈子的乐队吗？", AttributeType.EXCEPTION),
 
+    TAKI("椎名立希", 1000, 0.1, 100, "哈？", AttributeType.EXCEPTION),
+
+    RANA("要乐奈", 1000, 0.1, 100, "抹茶巴菲！", AttributeType.PROGRAM),
+
+    SAKI("丰川祥子", 1000, 0.1, 100, "你这个人，满脑子都是自己呢", AttributeType.CODE),
+
     MOMOKA("河原木桃香", 1000, 0.1, 100, "m0m0kさん!", AttributeType.ENTITY),
 
     NINA("井芹仁菜", 1000, 0.1, 100, "とっても美味しかったです。ありがとうございました 凸(^▽^)凸", AttributeType.EXCEPTION),
@@ -77,19 +83,21 @@ public enum PetType {
 
     YUI("平泽唯", 1000, 0.1, 100, "ギー太！", AttributeType.ENTITY),
 
-    UI("平泽忧", 1000, 0.1, 100, "“好成熟可靠的孩子”", AttributeType.ENTITY),
-
     MIO("秋山澪", 1000, 0.1, 100, "滑滑蛋~", AttributeType.CODE),
 
     AZUSA("中野梓", 1000, 0.1, 100, "あずにゃん~~", AttributeType.MODEL),
 
     RITSU("田井中律", 1000, 0.1, 100, "", AttributeType.DATA),
 
+    MUGI("琴吹䌷", 1000, 0.1, 100, "只是觉得女孩子之间真是好啊", AttributeType.MODEL),
+
     BOCCHI("后藤一里", 1000, 0.1, 100, "", AttributeType.EXCEPTION),
 
     LKUYO("喜多郁代", 1000, 0.1, 100, "", AttributeType.PROGRAM),
 
     NIJIKA("伊地知虹夏", 1000, 0.1, 100, "", AttributeType.EXCEPTION),
+
+    RYO("山田凉", 1000, 0.1, 100, "", AttributeType.ENTITY),
 
     LORIS("萝莉斯", 1000, 0.2, 100, "萝莉斯正在开心地睡觉", AttributeType.DATA),
 

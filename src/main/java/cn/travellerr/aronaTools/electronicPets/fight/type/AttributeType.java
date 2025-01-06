@@ -29,7 +29,9 @@ public enum AttributeType {
     MODEL("model", "模型"),
     ENTITY("entity", "实体"),
     EXCEPTION("exception", "异常"),
-    PROGRAM("program", "程序");
+    PROGRAM("program", "程序"),
+
+    ALL("all", "全部");
 
     /**
      * 定义每个 AttributeType 的弱点关系。

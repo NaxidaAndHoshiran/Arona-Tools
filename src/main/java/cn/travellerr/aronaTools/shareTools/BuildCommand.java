@@ -33,6 +33,14 @@ public class BuildCommand {
         return new Regex(regexBuilder.toString());
     }
 
+    /**
+     * 获取指令(正则)中的每个参数，去掉了指令本身
+     * <br>
+     * 例如指令为"/test 1 2 3"，则返回[1, 2, 3]
+     * @param regex 指令的正则
+     * @param input 输入的指令
+     * @return 指令中的每个参数
+     */
     public static List<String> getEveryValue(Regex regex, String input) {
         List<MatchResult> matches = SequencesKt.toList(regex.findAll(input, 0));
         if (matches.isEmpty()) return List.of();

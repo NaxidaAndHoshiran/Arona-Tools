@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
@@ -83,7 +84,7 @@ public class WordleManager {
 
                 int score = 0; // 初始化分数
                 int difficulty = 2; // 难度
-                try (InputStreamReader stream = new InputStreamReader(Objects.requireNonNull(AronaTools.INSTANCE.getResourceAsStream("wordle/CET4-6.json")))) {
+                try (InputStreamReader stream = new InputStreamReader(Objects.requireNonNull(AronaTools.INSTANCE.getResourceAsStream("wordle/CET4-6.json")), StandardCharsets.UTF_8)) {
                     // 发送难度选择消息
                     subject.sendMessage(MessageUtil.quoteReply(chain, "请选择难度：\n1. 简单(5个字母，10次机会)\n2. 普通(5个字母，6次机会)(默认，记录成绩)\n3. 困难(5个字母，6次机会，不允许重复字母)\n输入对应数字即可，或输入 exit 退出游戏"));
                     difficulty = parseDifficulty(MessageUtil.getNextMessage(sender, subject, chain, 60, TimeUnit.SECONDS)); // 解析难度
@@ -251,6 +252,10 @@ public class WordleManager {
     private static BufferedImage pictureBuilder(String guess, String feedback, BufferedImage oldPicture, int frequency) {
         BufferedImage newPicture = new BufferedImage(oldPicture.getWidth(), oldPicture.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D pen = newPicture.createGraphics();
+
+        // 打开抗锯齿
+        pen.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         ArrayList<Color> guessFeedback = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             LetterColor color = LetterColor.getLetterColor(feedback.charAt(i));

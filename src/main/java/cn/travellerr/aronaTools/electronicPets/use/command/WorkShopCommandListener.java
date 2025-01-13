@@ -77,7 +77,7 @@ public class WorkShopCommandListener extends SimpleListenerHost {
     public void onMessage(@NotNull MessageEvent event) {
         Contact subject = event.getSubject();
         User sender = event.getSender();
-        String message = event.getMessage().contentToString();
+        String message = event.getMessage().contentToString().strip();
 
         if (createTask.matches(message)) {
             Log.info("创建任务指令");

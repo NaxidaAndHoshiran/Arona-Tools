@@ -48,7 +48,7 @@ public class PetCommandListener extends SimpleListenerHost {
         Contact subject = event.getSubject();
         User sender = event.getSender();
         MessageChain originalMessage = event.getMessage();
-        String message = originalMessage.contentToString();
+        String message = originalMessage.contentToString().strip();
 
         if (getPetListCommand.matches(message)) {
             handleGetPetListCommand(subject);

@@ -34,6 +34,7 @@ public class Initialize {
         eventEventChannel.registerListenerHost(new SongCommandListener());
         eventEventChannel.registerListenerHost(new BroadCastCommandListener());
         eventEventChannel.registerListenerHost(new MenuListener());
+        eventEventChannel.registerListenerHost(new SyncListener());
 
         // 私用模块，请修改后使用
         if (ServiceConfig.INSTANCE.getEnableAutoJoinGroup()) {

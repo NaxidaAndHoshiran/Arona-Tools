@@ -21,6 +21,11 @@ dependencies {
     compileOnly(files('./libs/Favorability.mirai2.jar'))
     compileOnly(files('./libs/Qzone.mirai2.jar'))
 
+
+//    implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+
+
+
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
     implementation("cn.chahuyun:hibernate-plus:1.0.16")
 
@@ -30,21 +35,21 @@ dependencies {
     implementation 'com.google.zxing:javase:3.4.1'
 
 
-/*    String overflowVersion = "1.0.1"
+    String overflowVersion = "1.0.1"
     compileOnly("top.mrxiaom.mirai:overflow-core-api:$overflowVersion")
-    testConsoleRuntime("top.mrxiaom.mirai:overflow-core:$overflowVersion")*/
+    testConsoleRuntime("top.mrxiaom.mirai:overflow-core:$overflowVersion")
 }
 
 mirai {
     jvmTarget JavaVersion.VERSION_17
 
 
-/*    noTestCore = true
+    noTestCore = true
     setupConsoleTestRuntime {
         // 移除 mirai-core 依赖
 
         classpath = classpath.fi {
             !it.nameWithoutExtension.startsWith("mirai-core-jvm")
         }
-    }*/
+    }
 }

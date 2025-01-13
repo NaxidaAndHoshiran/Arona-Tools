@@ -17,10 +17,8 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.*
-/*import top.mrxiaom.overflow.contact.RemoteBot
-import top.mrxiaom.overflow.message.data.Markdown*/
+import top.mrxiaom.overflow.contact.RemoteBot
 import java.time.temporal.ChronoUnit
 
 object CheckKey  :
@@ -321,14 +319,14 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
     }
 
     @SubCommand("开始战斗")
-    fun startFight(context: CommandContext, user: User) {
+    fun startFight(context: CommandContext, user: Long) {
         val subject = context.sender.subject!!
         val sender = context.sender.user!!
 
         FightManager.startFight(subject, context.originalMessage, sender, user)
     }
 
-/*    @SubCommand("MD测试")
+    @SubCommand("MD测试")
     suspend fun testMd(context: CommandContext, actionPath: String, vararg msg: String) {
         val subject = context.sender.subject!!
         context.sender.user!!
@@ -340,7 +338,17 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         bot.executeAction(actionPath, message)
 //
 //        val templateMarkdown = Markdown()
-    }*/
+    }
+
+    @SubCommand("发送文本")
+    suspend fun sendText(context: CommandContext, vararg msg: String) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val message = context.originalMessage.content.split(" ").drop(3).joinToString(" ").trim()
+
+        subject.sendMessage(message)
+    }
 
 }
 
@@ -576,5 +584,15 @@ object Wordle : SimpleCommand(AronaTools.INSTANCE, "wordle", "wordle游戏", "wo
             str.matches("(年|year)".toRegex()) -> ChronoUnit.YEARS
             else -> ChronoUnit.FOREVER
         }
+    }
+}
+
+object GetId: SimpleCommand(AronaTools.INSTANCE, "getId", "获取ID", "我的ID", description = "获取用户ID") {
+    @Handler
+    suspend fun getId(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        subject.sendMessage("你的ID是 ${user.id}")
     }
 }

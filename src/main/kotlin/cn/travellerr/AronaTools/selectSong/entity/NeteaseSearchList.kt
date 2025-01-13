@@ -2,7 +2,6 @@ package cn.travellerr.aronaTools.selectSong.entity
 
 import cn.travellerr.aronaTools.selectSong.netease.NeteaseUrl
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.InputStreamReader
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -60,15 +59,15 @@ data class NeteaseAlbum (
 @Serializable
 data class NeteaseSearchList (
     val result: NeteaseSearchResult,
-    val hasMore: Boolean,
-    val songCount: Int
+    val hasMore: Boolean? = null,
+    val songCount: Int? = null
 ) {
     companion object {
-        fun fromString(json: String): NeteaseSearchList {
-            return Json.decodeFromString(serializer(), json)
+        fun fromString(str: String): NeteaseSearchList {
+            return json.decodeFromString(serializer(), str)
         }
-        fun fromInputStream(json: InputStreamReader): NeteaseSearchList {
-            return Json.decodeFromString(serializer(), json.readText())
+        fun fromInputStream(stream: InputStreamReader): NeteaseSearchList {
+            return json.decodeFromString(serializer(), stream.readText())
         }
     }
     fun getAllSongNames(): List<String> {

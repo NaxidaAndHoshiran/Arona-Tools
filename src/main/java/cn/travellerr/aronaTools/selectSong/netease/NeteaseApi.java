@@ -60,7 +60,7 @@ public class NeteaseApi {
         System.out.println(url);
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
-        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream())) {
+        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
             return NeteaseSearchList.Companion.fromInputStream(reader);
         }
     }
@@ -71,7 +71,7 @@ public class NeteaseApi {
         System.out.println(url);
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
-        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream())) {
+        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
             NeteaseResponse neteaseResponse = NeteaseResponse.Companion.fromInputStreamReader(reader);
             return neteaseResponse.getSongs().get(0);
         }

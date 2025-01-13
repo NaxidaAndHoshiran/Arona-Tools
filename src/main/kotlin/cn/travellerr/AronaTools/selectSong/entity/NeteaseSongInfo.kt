@@ -5,6 +5,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.InputStreamReader
 
+val json: Json = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    prettyPrint = true
+}
 
 @Serializable
 data class NeteaseResponse(
@@ -14,7 +19,7 @@ data class NeteaseResponse(
 ) {
     companion object {
         fun fromInputStreamReader(inputStream: InputStreamReader): NeteaseResponse {
-            return Json.decodeFromString(serializer(), inputStream.readText())
+            return json.decodeFromString(serializer(), inputStream.readText())
         }
     }
 }

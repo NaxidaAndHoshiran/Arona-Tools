@@ -15,6 +15,8 @@ public enum Skill {
     HEALTH("回复", SkillType.HEALTH, 10, 1, 0, PetType.values(), AttributeType.ALL),
     NORMAL_ATTACK("普通攻击", SkillType.ATTACK, 10, 1, 0, PetType.values(), AttributeType.ALL),
     FIREBALL("火球术", SkillType.ATTACK, 20, 2, 2, new PetType[]{PetType.CAT}, AttributeType.CODE),
+    OBLIVIONIS("遗忘", SkillType.ATTACK, 20, 2, 2, new PetType[]{PetType.SAKI}, null),
+
 
     // From QQ user "五雷"
     LEEK_PANCAKE("韭菜盒子", SkillType.HEALTH, 20, 1, 2, new PetType[]{PetType.OTTO}, null),

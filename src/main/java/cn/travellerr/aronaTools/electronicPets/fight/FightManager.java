@@ -20,10 +20,10 @@ public class FightManager {
 
     public static final ThreadPoolExecutor threadPool = new ThreadPoolExecutor(20, 20, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
-    public static void startFight(Contact subject, MessageChain messages, User user1, User user2) {
+    public static void startFight(Contact subject, MessageChain messages, User user1, Long user2) {
         threadPool.submit(() -> {
             PetInfo pet1 = PetManager.getPetInfo(user1.getId());
-            PetInfo pet2 = PetManager.getPetInfo(user2.getId());
+            PetInfo pet2 = PetManager.getPetInfo(user2);
             if (pet1 == null || pet2 == null) {
                 subject.sendMessage(MessageUtil.quoteReply(messages, "对方或您没有宠物！"));
                 return;
@@ -35,10 +35,10 @@ public class FightManager {
             String start = battleGround.startBattle();
 
             start = start.replace("%user1%", user1.getNick());
-            start = start.replace("%user2%", user2.getNick());
+            start = start.replace("%user2%", user2.toString());
 
             start = start.replace("%@user1%", "[mirai:at:" + user1.getId() + "]");
-            start = start.replace("%@user2%", "[mirai:at:" + user2.getId() + "]");
+            start = start.replace("%@user2%", "[mirai:at:" + user2 + "]");
 
             subject.sendMessage(MessageUtil.quoteReply(messages, MiraiCode.deserializeMiraiCode(start)));
 
@@ -54,15 +54,15 @@ public class FightManager {
                     break;
                 }
 
-                nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser().getId() + "]");
+                nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser() + "]");
 
                 // subject.sendMessage(MessageUtil.quoteReply(messages, "第" + battleGround.nextRound() + "回合\n").plus(MiraiCode.deserializeMiraiCode(nextOne)));
-                builder.add(bot, new PlainText("第" + battleGround.nextRound() + "回合\n").plus(MiraiCode.deserializeMiraiCode(nextOne)));
+                builder.add(bot, new PlainText("第" + battleGround.nextRound() + "回合").plus(MiraiCode.deserializeMiraiCode(nextOne)));
                 Log.debug("新的回合");
 
                 // 自动攻击
                 // subject.sendMessage(battleGround.autoAttack());
-                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().getNick())));
+                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
                 Log.debug("自动攻击");
 
                 // 切换到下一个宠物
@@ -70,7 +70,7 @@ public class FightManager {
                 if (nextOne.contains("-1")) {
                     break;
                 }
-                nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser().getId() + "]");
+                nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser() + "]");
                 // subject.sendMessage(MessageUtil.quoteReply(messages, MiraiCode.deserializeMiraiCode(nextOne)));
                 builder.add(bot, MiraiCode.deserializeMiraiCode(nextOne));
 
@@ -78,13 +78,15 @@ public class FightManager {
 
                 // 自动攻击
                 // subject.sendMessage(battleGround.autoAttack());
-                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().getNick())));
+                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
 
                 Log.debug("自动攻击");
 
                 if (builder.size() >= 88) {
                     subject.sendMessage(builder.build());
                     builder = new ForwardMessageBuilder(subject);
+
+
                 }
             }
 
@@ -100,8 +102,6 @@ public class FightManager {
             }
         });
     }
-
-
 
 
 

@@ -17,7 +17,7 @@ public class FightPet {
      */
     private PetInfo petInfo;
 
-    private User user;
+    private Long user;
 
     /**
      * 宠物的生命值
@@ -52,6 +52,22 @@ public class FightPet {
      * @param petInfo 宠物信息对象
      */
     public FightPet(PetInfo petInfo, User user) {
+        this.petInfo = petInfo;
+        this.user = user.getId();
+        this.attributeType = petInfo.getPetType().getAttributeType();
+        this.Hp = petInfo.getPetHp();
+        this.attack = petInfo.getPetEnergy();
+        this.defend = petInfo.getPetHealth();
+        this.speed = petInfo.getPetLevel() * petInfo.getValueChangePerMin() * 10;
+        this.cost = 5;
+    }
+
+    /**
+     * 构造函数，初始化战斗宠物的属性
+     *
+     * @param petInfo 宠物信息对象
+     */
+    public FightPet(PetInfo petInfo, Long user) {
         this.petInfo = petInfo;
         this.user = user;
         this.attributeType = petInfo.getPetType().getAttributeType();

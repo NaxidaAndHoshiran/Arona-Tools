@@ -20,5 +20,7 @@ object RegCommand {
         CommandManager.registerCommand(Totp)
         CommandManager.registerCommand(Wordle)
         CommandManager.registerCommand(GetId)
+        CommandManager.registerCommand(GetGift)
+        CommandManager.registerCommand(Gift)
     }
 }

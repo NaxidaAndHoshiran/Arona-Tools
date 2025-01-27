@@ -3,11 +3,13 @@ package cn.travellerr.aronaTools.command
 import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.travellerr.aronaTools.AronaTools
 import cn.travellerr.aronaTools.broadcast.BroadCastManager
+import cn.travellerr.aronaTools.components.GiftPackage
 import cn.travellerr.aronaTools.echoCaves.EchoManager
 import cn.travellerr.aronaTools.electronicPets.fight.FightManager
 import cn.travellerr.aronaTools.electronicPets.use.PetManager
 import cn.travellerr.aronaTools.electronicPets.use.shop.WorkShopItemManager
 import cn.travellerr.aronaTools.electronicPets.use.task.WorkShopTaskManager
+import cn.travellerr.aronaTools.entity.GiftInfo
 import cn.travellerr.aronaTools.entity.PetInfo
 import cn.travellerr.aronaTools.subscribedChannel.Subscribed
 import cn.travellerr.aronaTools.totp.TotpManager
@@ -18,7 +20,6 @@ import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
-import top.mrxiaom.overflow.contact.RemoteBot
 import java.time.temporal.ChronoUnit
 
 object CheckKey  :
@@ -326,7 +327,7 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         FightManager.startFight(subject, context.originalMessage, sender, user)
     }
 
-    @SubCommand("MD测试")
+/*    @SubCommand("MD测试")
     suspend fun testMd(context: CommandContext, actionPath: String, vararg msg: String) {
         val subject = context.sender.subject!!
         context.sender.user!!
@@ -338,12 +339,11 @@ object Tester : CompositeCommand(AronaTools.INSTANCE, "tester",
         bot.executeAction(actionPath, message)
 //
 //        val templateMarkdown = Markdown()
-    }
+    }*/
 
     @SubCommand("发送文本")
     suspend fun sendText(context: CommandContext, vararg msg: String) {
         val subject = context.sender.subject!!
-        val user = context.sender.user!!
 
         val message = context.originalMessage.content.split(" ").drop(3).joinToString(" ").trim()
 
@@ -594,5 +594,80 @@ object GetId: SimpleCommand(AronaTools.INSTANCE, "getId", "获取ID", "我的ID"
         val user = context.sender.user!!
 
         subject.sendMessage("你的ID是 ${user.id}")
+    }
+}
+
+object GetGift: SimpleCommand(AronaTools.INSTANCE, "getGift", "获取礼物", "领取礼物", "领取礼包", "获取礼包", description = "领取礼物") {
+    @Handler
+    suspend fun getGift(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val message = context.originalMessage
+
+        subject.sendMessage(QuoteReply(message).plus(PlainText(GiftPackage.ReceiveGiftPackage(user))))
+    }
+
+    @Handler
+    suspend fun getGift(context: CommandContext, msg: String) {
+        val subject = context.sender.subject!!
+        val user = context.sender.user!!
+
+        val message = context.originalMessage
+
+        val giftId : Int = msg.trim().toInt()
+
+        subject.sendMessage(QuoteReply(message).plus(PlainText(GiftPackage.ReceiveGiftPackage(user, giftId))))
+    }
+}
+
+object Gift: CompositeCommand(AronaTools.INSTANCE, "gift", "礼物", "礼物系统", "礼物系统管理", "礼物管理", description = "礼物系统管理") {
+    @SubCommand("获取", "获取礼物", "获取礼物列表")
+    suspend fun getGift(context: CommandContext) {
+        val subject = context.sender.subject!!
+        val bot = context.sender.bot!!
+
+        val giftList = HibernateFactory.selectList(GiftInfo::class.java)
+
+        if (giftList.isEmpty()) {
+            subject.sendMessage(QuoteReply(context.originalMessage).plus("系统中还没有礼物"))
+            return
+        }
+
+        val forwardMsg = ForwardMessageBuilder(subject)
+
+        for (gift in giftList) {
+            val message = PlainText("礼物ID: ${gift.giftId}\n").plus(gift.giftInfo)
+            forwardMsg.add(bot, message)
+        }
+
+
+        subject.sendMessage(forwardMsg.build())
+    }
+
+    @SubCommand("添加", "添加礼物", "添加礼包", "创建", "创建礼物", "创建礼包")
+    suspend fun addGift(context: CommandContext, vararg msg: String) {
+        val subject = context.sender.subject!!
+
+        val message = context.originalMessage
+
+        val giftInfo = msg.joinToString(" ").trim()
+
+        if (giftInfo.isEmpty() || giftInfo.isBlank()) {
+            subject.sendMessage("请输入礼物信息")
+            return
+        }
+
+        subject.sendMessage(QuoteReply(message).plus(GiftPackage.CreateGiftPackage(giftInfo)))
+    }
+
+    @SubCommand("删除", "删除礼物", "删除礼物信息")
+    suspend fun deleteGift(context: CommandContext, giftId: Int) {
+        val subject = context.sender.subject!!
+
+        val message = context.originalMessage
+
+
+        subject.sendMessage(QuoteReply(message).plus(GiftPackage.DeleteGiftPackage(giftId)))
     }
 }

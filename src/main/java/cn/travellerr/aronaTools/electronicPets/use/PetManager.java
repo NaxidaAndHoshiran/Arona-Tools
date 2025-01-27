@@ -205,4 +205,16 @@ public class PetManager {
 
         subject.sendMessage(new QuoteReply(originalMessage).plus("转换成功！共转换为技术点：" + money * petConfig.getExchangePetMoney() + "\n当前技术点：" + petInfo.getPetTechPoint()));
     }
+
+    public static boolean addPetCoin(User sender, int petCoin) {
+        PetInfo petInfo = HibernateFactory.selectOne(PetInfo.class, sender.getId());
+        if (petInfo == null) {
+            return false;
+        }
+
+        petInfo.addPetCoin(petCoin);
+        savePetInfo(petInfo);
+
+        return true;
+    }
 }

@@ -34,6 +34,7 @@ public class PetCommandListener extends SimpleListenerHost {
     private final Regex checkTaskCommand = BuildCommand.createCommand("查看任务|任务详情|任务信息");
     private final Regex endTaskCommand = BuildCommand.createCommand("结束任务|放弃任务|取消任务");
     private final Regex buyItemCommand = BuildCommand.createCommand("购买物品|购买道具", Integer.class);
+    private final Regex buyItemsOneTimeCommand = BuildCommand.createCommand("购买物品|购买道具", Integer.class, Integer.class);
 
     private final Regex userMoneyToPetCoinCommand = BuildCommand.createCommand("金币兑换|兑换科技点|兑换|转金币", Integer.class);
 
@@ -75,7 +76,13 @@ public class PetCommandListener extends SimpleListenerHost {
             handleEndTaskCommand(subject, sender, originalMessage);
         } else if (buyItemCommand.matches(message)) {
             handleBuyItemCommand(subject, sender, message, originalMessage);
-        } else if (userMoneyToPetCoinCommand.matches(message)) {
+        } else if (buyItemsOneTimeCommand.matches(message)) {
+            List<String> key = BuildCommand.getEveryValue(buyItemsOneTimeCommand, message);
+            int itemId = Integer.parseInt(key.get(0));
+            int count = Integer.parseInt(key.get(1));
+            PetInfo petInfo = PetManager.getPetInfo(sender.getId());
+            ShopManager.buyItem(subject, originalMessage, sender, petInfo, itemId, count);
+        }else if (userMoneyToPetCoinCommand.matches(message)) {
             List<String> key = BuildCommand.getEveryValue(userMoneyToPetCoinCommand, message);
             int money = Integer.parseInt(key.get(0));
             PetManager.userMoneyToPetCoin(subject, originalMessage, sender, money);

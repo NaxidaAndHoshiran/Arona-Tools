@@ -47,6 +47,11 @@ public class FightPet {
     private int cost;
 
     /**
+     * 是否被控制
+     */
+    private boolean isControlled;
+
+    /**
      * 构造函数，初始化战斗宠物的属性
      *
      * @param petInfo 宠物信息对象
@@ -60,6 +65,7 @@ public class FightPet {
         this.defend = petInfo.getPetHealth();
         this.speed = petInfo.getPetLevel() * petInfo.getValueChangePerMin() * 10;
         this.cost = 5;
+        this.isControlled = false;
     }
 
     /**

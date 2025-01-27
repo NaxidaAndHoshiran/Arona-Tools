@@ -20,9 +20,21 @@ public enum Skill {
 
     // From QQ user "五雷"
     LEEK_PANCAKE("韭菜盒子", SkillType.HEALTH, 20, 1, 2, new PetType[]{PetType.OTTO}, null),
-    WOW("哇袄", SkillType.DEFEND, 30, 2, 4, new PetType[]{PetType.OTTO}, null),
+    WOW("哇袄", SkillType.DEFEND, 20, 2, 4, new PetType[]{PetType.OTTO}, null),
     ICE("冰！！！", SkillType.ATTACK, 5, 0, 2, new PetType[]{PetType.OTTO}, null),
     HA_LI_LU_STORM("哈里路大旋风！！！", SkillType.ATTACK, 40, 5, 5, new PetType[]{PetType.OTTO}, null),
+
+
+    // From QQ user "小鸟游星野(159*****69)"
+    TACTICAL_SUPPRESSION("战术压制", SkillType.DEFEND, 30, 2, 2, new PetType[]{PetType.HOSHINO}, null),
+
+    // From QQ user "扇喜葵(169*****71)"
+    LOGIC_AND_LEGITIMACY("逻辑与正当性", SkillType.CONTROL, 60, 2, 2, new PetType[]{PetType.OKIAOI}, null),
+
+    // From QQ user "清浅(399*****55)"
+    CALL_OF_DRONES_FIRE_SUPPORT("无人机召唤:火力支援", SkillType.ATTACK, 30, 3, 3, new PetType[]{PetType.SHIROKO}, null),
+
+
 
     // 测试用技能
     //ONESHOT("一击必杀", SkillType.ATTACK, 100, 10, 10, new PetType[]{PetType.CAT}, AttributeType.CODE),
@@ -36,6 +48,8 @@ public enum Skill {
 
     /**
      * 技能类型。
+     *
+     * @see SkillType
      */
     private final SkillType skillType;
 
@@ -56,6 +70,8 @@ public enum Skill {
 
     /**
      * 可以使用此技能的宠物类型。
+     *
+     * @see PetType
      */
     private final PetType[] petType;
 
@@ -64,6 +80,8 @@ public enum Skill {
      * <p>
      * <code>null</code>值为无。
      * <code>all</code>值为全部属性。
+     *
+     * @see AttributeType
      */
     private final AttributeType attributeType;
 

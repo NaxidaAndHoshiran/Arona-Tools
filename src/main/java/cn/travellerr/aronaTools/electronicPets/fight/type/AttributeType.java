@@ -23,6 +23,9 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public enum AttributeType {
+    /**
+     * NULL - 空属性，请用于普通宠物（狗、猫、鸟）。
+     */
     NULL("null", "空"),
     CODE("code", "编码"),
     DATA("data", "数据"),
@@ -31,6 +34,9 @@ public enum AttributeType {
     EXCEPTION("exception", "异常"),
     PROGRAM("program", "程序"),
 
+    /**
+     * 全部属性, 用于表示不受属性克制。
+     */
     ALL("all", "全部");
 
     /**

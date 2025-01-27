@@ -159,11 +159,31 @@ public class BattleGround implements Battle {
             } else if (againstResult == -1) {
                 value = (int) (value * 0.5); // 属性被克制，伤害减少50%
             }
+
+            this.nextPet.addDefend(-value); // 扣除对方宠物的防御值
+            if (this.nextPet.getDefend() < 0) {
+                value = (int) -this.nextPet.getDefend();
+                this.nextPet.setDefend(0);
+            }
             this.nextPet.addHp(-value); // 扣除对方宠物的生命值
         } else if (skill.getSkillType().equals(SkillType.DEFEND)) {
             nowPet.addDefend(skill.getDefaultValue()); // 增加防御值
-        } else {
+        } else if (skill.getSkillType().equals(SkillType.HEALTH)) {
             nowPet.addHp(skill.getDefaultValue()); // 恢复生命值
+        } else if (skill.getSkillType().equals(SkillType.CONTROL)) {
+            // 控制技能
+            // 判断属性相克关系
+            int againstResult = this.nowPet.getAttributeType().isWeakAgainst(this.nextPet.getAttributeType());
+            if (againstResult == 1) {
+                value = (int) (value * 1.5); // 属性克制，伤害增加50%
+            } else if (againstResult == -1) {
+                value = (int) (value * 0.5); // 属性被克制，伤害减少50%
+            }
+            this.nextPet.addDefend(-value); // 扣除对方宠物的防御值
+            if (this.nextPet.getDefend() < 0) {
+                this.nextPet.setDefend(0);
+                this.nextPet.setControlled(true); // 控制对方宠物
+            }
         }
 
         return value; // 返回技能的实际效果值

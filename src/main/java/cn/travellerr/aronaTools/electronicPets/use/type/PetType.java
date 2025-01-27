@@ -112,6 +112,8 @@ public enum PetType {
 
     ALIS("爱丽丝", new String[]{"天童爱丽丝"}, 1000, 0.1, 100, "我草，盒！爱丽丝错了，爱丽丝不该在网上口嗨的！", AttributeType.MODEL),
     HOSHINO("星野", new String[]{"小鸟游星野"}, 1000, 0.1, 100, "完全没睡到午觉耶，嘛，也没办法吧", AttributeType.EXCEPTION),
+    OKIAOI("扇喜葵", new String[]{"葵", "扇喜 アオイ", "扇喜アオイ", "アオイ"}, 1000, 0.1, 100, "联邦理事会财务室主任，是凛的后辈。\n性格认真，很在意逻辑与正当性。面对越界行为时，她能严正地提出反对意见。看似不近人情，但这也是她一直以来所坚守的。\n“就算你是代理会长，这也已经越界了。” ", AttributeType.ENTITY),
+    SHIROKO("砂狼白子", new String[]{"白子", "シロコ", "砂狼シロコ"}, 1000, 0.1, 100, "阿拜多斯高等学校所属，是热爱运动的阿拜多斯对策委员会的突击队长。\n虽然给人一种沉默寡言，冷若冰霜的印象，但实际上比谁都重视阿比多斯高等学院。\n为了学院的复兴可以不择手段，所以偶尔会提出一些荒唐的提案。", AttributeType.MODEL),
 
 
     TRAVELLERR("Travellerr", new String[]{}, 1000000, 0.01, 10000, "", AttributeType.PROGRAM),;
@@ -121,6 +123,9 @@ public enum PetType {
      */
     private final String petType;
 
+    /**
+     * 宠物种类别名
+     */
     private final String[] alias;
 
     /**
@@ -143,6 +148,10 @@ public enum PetType {
      */
     private final String description;
 
+    /**
+     * 宠物属性
+     * @see AttributeType
+     */
     private final AttributeType attributeType;
 
     /**

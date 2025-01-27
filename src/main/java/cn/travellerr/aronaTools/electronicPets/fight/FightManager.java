@@ -56,14 +56,21 @@ public class FightManager {
 
                 nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser() + "]");
 
-                // subject.sendMessage(MessageUtil.quoteReply(messages, "第" + battleGround.nextRound() + "回合\n").plus(MiraiCode.deserializeMiraiCode(nextOne)));
-                builder.add(bot, new PlainText("第" + battleGround.nextRound() + "回合").plus(MiraiCode.deserializeMiraiCode(nextOne)));
-                Log.debug("新的回合");
+                // 检查是否被控制
+                if (battleGround.getNowPet().isControlled()) {
+                    builder.add(bot, new PlainText("[mirai:at:" + battleGround.getNowPet().getUser() + "] 被控制，跳过回合。\n"));
+                    Log.debug("被控制，跳过回合");
+                    battleGround.getNowPet().setControlled(false);
+                } else {
+                    // subject.sendMessage(MessageUtil.quoteReply(messages, "第" + battleGround.nextRound() + "回合\n").plus(MiraiCode.deserializeMiraiCode(nextOne)));
+                    builder.add(bot, new PlainText("第" + battleGround.nextRound() + "回合").plus(MiraiCode.deserializeMiraiCode(nextOne)));
+                    Log.debug("新的回合");
 
-                // 自动攻击
-                // subject.sendMessage(battleGround.autoAttack());
-                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
-                Log.debug("自动攻击");
+                    // 自动攻击
+                    // subject.sendMessage(battleGround.autoAttack());
+                    builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
+                    Log.debug("自动攻击");
+                }
 
                 // 切换到下一个宠物
                 nextOne = battleGround.nextOne();
@@ -71,25 +78,28 @@ public class FightManager {
                     break;
                 }
                 nextOne = nextOne.replace("%@user1%", "[mirai:at:" + battleGround.getNowPet().getUser() + "]");
-                // subject.sendMessage(MessageUtil.quoteReply(messages, MiraiCode.deserializeMiraiCode(nextOne)));
-                builder.add(bot, MiraiCode.deserializeMiraiCode(nextOne));
 
-                Log.debug("对方回合");
+                // 检查是否被控制
+                if (battleGround.getNowPet().isControlled()) {
+                    builder.add(bot, new PlainText("[mirai:at:" + battleGround.getNowPet().getUser() + "] 被控制，跳过回合。\n"));
+                    Log.debug("被控制，跳过回合");
+                    battleGround.getNowPet().setControlled(false);
+                } else {
+                    // subject.sendMessage(MessageUtil.quoteReply(messages, MiraiCode.deserializeMiraiCode(nextOne)));
+                    builder.add(bot, MiraiCode.deserializeMiraiCode(nextOne));
+                    Log.debug("对方回合");
 
-                // 自动攻击
-                // subject.sendMessage(battleGround.autoAttack());
-                builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
-
-                Log.debug("自动攻击");
+                    // 自动攻击
+                    // subject.sendMessage(battleGround.autoAttack());
+                    builder.add(bot, new PlainText(battleGround.autoAttack().replace("%user1%", battleGround.getNowPet().getUser().toString())).plus("\n"));
+                    Log.debug("自动攻击");
+                }
 
                 if (builder.size() >= 88) {
                     subject.sendMessage(builder.build());
                     builder = new ForwardMessageBuilder(subject);
-
-
                 }
             }
-
             // 结束战斗并输出结果
             // subject.sendMessage(battleGround.endBattle(null));
             Log.debug("战斗结束");

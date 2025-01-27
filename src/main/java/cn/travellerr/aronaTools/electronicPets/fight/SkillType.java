@@ -14,7 +14,8 @@ import lombok.Getter;
 public enum SkillType {
     ATTACK("attack"), // 攻击技能
     DEFEND("defend"), // 防御技能
-    HEALTH("health"); // 恢复技能
+    HEALTH("health"), // 恢复技能
+    CONTROL("control"); // 控制技能
 
     /**
      * 技能编号(英文);
@@ -26,6 +27,7 @@ public enum SkillType {
             case ATTACK -> "攻击";
             case DEFEND -> "防御";
             case HEALTH -> "恢复";
+            case CONTROL -> "控制";
             default -> "未知";
         };
     }

@@ -23,6 +23,8 @@ import java.util.List;
 public class PetCommandListener extends SimpleListenerHost {
 
     private final Regex getPetListCommand = BuildCommand.createCommand("获取宠物列表|宠物列表|查看宠物列表|查看宠物种类");
+    private final Regex getPetListByPageCommand = BuildCommand.createCommand("获取宠物列表|宠物列表|查看宠物列表|查看宠物种类", Integer.class);
+    private final Regex searchPetCommand = BuildCommand.createCommand("搜索宠物|查找宠物", String.class);
     private final Regex createPetCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class, String.class);
     private final Regex createPetWithDefaultNameCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class);
     private final Regex checkPetCommand = BuildCommand.createCommand("查看宠物|我的宠物|宠物信息|宠物详情");
@@ -53,7 +55,11 @@ public class PetCommandListener extends SimpleListenerHost {
 
         if (getPetListCommand.matches(message)) {
             handleGetPetListCommand(subject);
-
+        } else if (getPetListByPageCommand.matches(message)) {
+            handleGetPetListByPageCommand(subject, message);
+        } else if (searchPetCommand.matches(message)) {
+            List<String> key = BuildCommand.getEveryValue(searchPetCommand, message);
+            PetManager.searchPet(subject, key.get(0));
         } else if (createPetWithDefaultNameCommand.matches(message)) {
             handleCreatePetCommand(subject, sender, message, originalMessage, false);
         } else if (createPetCommand.matches(message)) {
@@ -91,6 +97,12 @@ public class PetCommandListener extends SimpleListenerHost {
 
     private void handleGetPetListCommand(Contact subject) {
         PetManager.getPetList(subject);
+    }
+
+    private void handleGetPetListByPageCommand(Contact subject, String messages) {
+        List<String> key = BuildCommand.getEveryValue(getPetListByPageCommand, messages);
+        int page = Integer.parseInt(key.get(0));
+        PetManager.getPetList(subject, page);
     }
 
     private void handleBuyItemCommand(Contact subject, User sender, String message, MessageChain originalMessage) {

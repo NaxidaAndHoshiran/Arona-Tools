@@ -10,7 +10,9 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.message.data.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static cn.travellerr.aronaTools.AronaTools.petConfig;
 
@@ -155,27 +157,34 @@ public class PetManager {
         return HibernateFactory.selectOne(PetInfo.class, id);
     }
 
-    public static void getPetList(Contact subject) {
+    public static void getPetList(Contact subject, int page) {
         List<PetType> petTypes = List.of(PetType.values());
         Bot bot = subject.getBot();
 
         ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
 
-        for (PetType petType : petTypes) {
-            Message message = new PlainText("宠物种类：" + petType.getPetType() + "\n")
-                    .plus("价格：" + petType.getCost())
-                    .plus("\n")
-                    .plus("最大生命值：" + petType.getDefaultMaxHp())
-                    .plus("\n")
-                    .plus("每分钟变化：" + petType.getValueChangePerMin())
-                    .plus("\n")
-                    .plus("描述：" + petType.getDescription())
-                    .plus("\n")
-                    .plus("属性：" + petType.getAttributeType().getName());
+        builder.add(bot, new PlainText("--宠物种类列表(共"+petTypes.size()+"种，第"+page+"页)--"));
+
+        int itemsPerPage = 99;
+        int start = (page - 1) * itemsPerPage;
+        int end = Math.min(start + itemsPerPage, petTypes.size());
+
+        if (start >= petTypes.size() || start < 0) {
+            subject.sendMessage(new PlainText("页码超出范围"));
+            return;
+        }
+
+        for (int i = start; i < end; i++) {
+            PetType petType = petTypes.get(i);
+            Message message = new PlainText(petType.getInfo());
             builder.add(bot, message);
         }
 
         subject.sendMessage(builder.build());
+    }
+
+    public static void getPetList(Contact subject) {
+        getPetList(subject, 1);
     }
 
     public static void userMoneyToPetCoin(Contact subject, MessageChain originalMessage, User sender, int money) {
@@ -216,5 +225,19 @@ public class PetManager {
         savePetInfo(petInfo);
 
         return true;
+    }
+
+    public static void searchPet(Contact subject, String petName) {
+        List<PetType> petTypeList = List.of(PetType.values());
+        for (PetType petType : petTypeList) {
+            String lowerPetName = petName.toLowerCase(Locale.ROOT);
+            if (petType.toString().toLowerCase(Locale.ROOT).equals(lowerPetName) ||
+                petType.getPetType().equals(petName) ||
+                Arrays.asList(petType.getAlias()).contains(petName)) {
+                subject.sendMessage(new PlainText(petType.getInfo()));
+                return;
+            }
+        }
+        subject.sendMessage(new PlainText("未找到宠物：" + petName));
     }
 }

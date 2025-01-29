@@ -4,6 +4,7 @@ import kotlin.sequences.SequencesKt;
 import kotlin.text.MatchResult;
 import kotlin.text.Regex;
 import net.mamoe.mirai.console.command.CommandManager;
+import net.mamoe.mirai.message.data.At;
 
 import java.util.List;
 
@@ -25,6 +26,8 @@ public class BuildCommand {
                 regexBuilder.append(" ?(\\d+\\.\\d+)");
             } else if (arg == Boolean.class) {
                 regexBuilder.append(" ?(true|false)");
+            } else if (arg == At.class) {
+                regexBuilder.append(" ?((@\\d+)|([mirai:at:\\d+]))");
             } else {
                 throw new IllegalArgumentException("Unsupported argument type: " + arg.getName());
             }

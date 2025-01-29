@@ -7,13 +7,16 @@ import cn.travellerr.aronaTools.electronicPets.use.type.PetType;
 import cn.travellerr.aronaTools.entity.PetInfo;
 import cn.travellerr.aronaTools.shareTools.BuildCommand;
 import cn.travellerr.aronaTools.shareTools.Log;
+import cn.travellerr.aronaTools.shareTools.MessageUtil;
 import kotlin.coroutines.CoroutineContext;
 import kotlin.text.Regex;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.QuoteReply;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +29,7 @@ public class PetCommandListener extends SimpleListenerHost {
     private final Regex getPetListByPageCommand = BuildCommand.createCommand("获取宠物列表|宠物列表|查看宠物列表|查看宠物种类", Integer.class);
     private final Regex searchPetCommand = BuildCommand.createCommand("搜索宠物|查找宠物", String.class);
     private final Regex createPetCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class, String.class);
+    private final Regex createPetWithMemberCommand = BuildCommand.createCommand("创建宠物|领养宠物", At.class);
     private final Regex createPetWithDefaultNameCommand = BuildCommand.createCommand("创建宠物|领养宠物", String.class);
     private final Regex checkPetCommand = BuildCommand.createCommand("查看宠物|我的宠物|宠物信息|宠物详情");
     private final Regex deletePetCommand = BuildCommand.createCommand("删除宠物|抛弃宠物|遗弃宠物");
@@ -60,11 +64,30 @@ public class PetCommandListener extends SimpleListenerHost {
         } else if (searchPetCommand.matches(message)) {
             List<String> key = BuildCommand.getEveryValue(searchPetCommand, message);
             PetManager.searchPet(subject, key.get(0));
+        } else if (createPetWithMemberCommand.matches(message)) {
+            At at = originalMessage.stream().filter(At.class::isInstance).map(At.class::cast).findFirst().orElse(null);
+            if (!(event instanceof GroupMessageEvent groupMessageEvent)) {
+                subject.sendMessage(MessageUtil.quoteReply(originalMessage, "只能在群聊中使用@功能哦"));
+                return;
+            }
+            if (at == null) {
+                subject.sendMessage(MessageUtil.quoteReply(originalMessage, "请@一个成员"));
+                return;
+            }
+
+            String petName = at.getDisplay(groupMessageEvent.getGroup());
+            boolean success = PetManager.createPet(subject, sender, petName, PetType.CUSTOM);
+
+            if (!success) return;
+
+            subject.sendMessage(new QuoteReply(originalMessage).plus("宠物创建成功！\n名称：" + petName +
+                    "\n消耗：1000 金币"));
+
         } else if (createPetWithDefaultNameCommand.matches(message)) {
             handleCreatePetCommand(subject, sender, message, originalMessage, false);
         } else if (createPetCommand.matches(message)) {
             handleCreatePetCommand(subject, sender, message, originalMessage, true);
-        } else if (renamePetCommand.matches(message)) {
+        }  else if (renamePetCommand.matches(message)) {
             handleRenamePetCommand(subject, sender, message, originalMessage);
         } else if (checkPetCommand.matches(message)) {
             PetManager.checkPet(subject, originalMessage, sender.getId());

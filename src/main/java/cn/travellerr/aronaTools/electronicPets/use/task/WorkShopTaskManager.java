@@ -157,44 +157,48 @@ public class WorkShopTaskManager {
      * @param message 消息链
      */
     public static void createTaskByStep(Contact subject, User sender, MessageChain message) {
-        int timeout = 30;
-        TimeUnit timeUnit = TimeUnit.SECONDS;
-
-        subject.sendMessage(new QuoteReply(message).plus("开始创建任务，请按照提示输入内容\n输入 exit 或 退出 可取消创建"));
-
-        String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务编号(英文，不超过20字符)");
-        if (code.isEmpty() || !Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
-            subject.sendMessage("任务编号只能为英文和下划线，且长度不超过20");
-            return;
-        }
-
-        String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务名称(非数字)");
-        if (name.isEmpty()) return;
-
-        String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务描述(非数字)");
-        if (description.isEmpty()) return;
-
-        String taskTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务类型(工作, 学习, 游玩)");
-        if (taskTypeString.isEmpty()) return;
-
-        TaskType taskType;
         try {
-            taskType = TaskType.fromString(taskTypeString);
+            int timeout = 30;
+            TimeUnit timeUnit = TimeUnit.SECONDS;
+
+            subject.sendMessage(new QuoteReply(message).plus("开始创建任务，请按照提示输入内容\n输入 exit 或 退出 可取消创建"));
+
+            String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务编号(英文，不超过20字符)");
+            if (code.isEmpty() || !Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
+                subject.sendMessage("任务编号只能为英文和下划线，且长度不超过20");
+                return;
+            }
+
+            String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务名称(非数字)");
+            if (name.isEmpty()) return;
+
+            String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务描述(非数字)");
+            if (description.isEmpty()) return;
+
+            String taskTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务类型(工作, 学习, 游玩)");
+            if (taskTypeString.isEmpty()) return;
+
+            TaskType taskType;
+            try {
+                taskType = TaskType.fromString(taskTypeString);
+            } catch (Exception e) {
+                subject.sendMessage("未知的任务类型:" + taskTypeString);
+                return;
+            }
+
+            int takeTime = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务时长(分钟)"));
+            double moneyPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入金币奖励(每分钟，建议10金币以内)"));
+            double expPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(每分钟)"));
+            double moodPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(每分钟)"));
+
+            Task task = new Task(code, name, description, false, taskType, takeTime, moneyPerMin, expPerMin, moodPerMin, sender.getNick(), sender.getId());
+
+            EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
+
+            subject.sendMessage("任务创建成功! 任务编号: " + addTask(task) + "\n请等待审核，审核通过后将会在任务列表中显示");
         } catch (Exception e) {
-            subject.sendMessage("未知的任务类型:" + taskTypeString);
-            return;
+            subject.sendMessage("创建任务失败，请检查输入是否正确! "+e.getMessage());
         }
-
-        int takeTime = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入任务时长(分钟)"));
-        double moneyPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入金币奖励(每分钟)"));
-        double expPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(每分钟)"));
-        double moodPerMin = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(每分钟)"));
-
-        Task task = new Task(code, name, description, false, taskType, takeTime, moneyPerMin, expPerMin, moodPerMin, sender.getNick(), sender.getId());
-
-        EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
-
-        subject.sendMessage("任务创建成功! 任务编号: " + addTask(task) + "\n请等待审核，审核通过后将会在任务列表中显示");
     }
 
     /**

@@ -45,6 +45,8 @@ public enum AttributeType {
      * 键为优方，值为劣方。
      * <br>
      *  <strong><i>键 -克制-> 值</i></strong>
+     *  <br>
+     *  <strong>其中若为克制关系，则应有1.5倍加成伤害，被克制则为0.5倍伤害。</strong>
      * <pre>
      * NULL -克制-> NULL
      * EXCEPTION -克制-> CODE
@@ -73,7 +75,7 @@ public enum AttributeType {
     /**
      * 判断是否克制对方属性
      * @param other 对方属性
-     * @return 1: 克制对方属性, -1: 被对方属性克制, 0: 无克制关系
+     * @return 1: 克制对方属性, 1: 被对方属性克制, 0: 无克制关系
      */
     public int isWeakAgainst(AttributeType other) {
         return WEAKNESS_MAP.get(this).equals(other) ? 1 : WEAKNESS_MAP.get(other).equals(this) ? -1 : 0;

@@ -162,48 +162,51 @@ public class WorkShopItemManager {
     public static void createItemByStep(Contact subject, User sender, MessageChain message) {
 
 
-
-
-        int timeout = 30;
-        TimeUnit timeUnit = TimeUnit.SECONDS;
-
-        String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品编号(英文，不超过20字符)");
-        if (code.isEmpty()) return;
-
-        // 匹配code是否为英文
-        if (!Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
-            subject.sendMessage("物品编号只能为英文和下划线，且长度不超过20");
-            return;
-        }
-
-        String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品名称(非数字)");
-        if (name.isEmpty()) return;
-
-        String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品描述(非数字)");
-        if (description.isEmpty()) return;
-
-        String itemTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品类型(食物/饮品/洗浴/玩具/药品)");
-        if (itemTypeString.isEmpty()) return;
-        ItemType itemType;
         try {
-            itemType = ItemType.fromString(itemTypeString);
+
+            int timeout = 30;
+            TimeUnit timeUnit = TimeUnit.SECONDS;
+
+            String code = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品编号(英文，不超过20字符)");
+            if (code.isEmpty()) return;
+
+            // 匹配code是否为英文
+            if (!Pattern.matches("^[a-zA-Z_]{1,20}$", code)) {
+                subject.sendMessage("物品编号只能为英文和下划线，且长度不超过20");
+                return;
+            }
+
+            String name = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品名称(非数字)");
+            if (name.isEmpty()) return;
+
+            String description = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品描述(非数字)");
+            if (description.isEmpty()) return;
+
+            String itemTypeString = getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品类型(食物/饮品/洗浴/玩具/药品)");
+            if (itemTypeString.isEmpty()) return;
+            ItemType itemType;
+            try {
+                itemType = ItemType.fromString(itemTypeString);
+            } catch (Exception e) {
+                subject.sendMessage("未知的物品类型:" + itemTypeString);
+                return;
+            }
+
+            int cost = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品成本(整数)"));
+            long addExp = Long.parseLong(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(整数)"));
+            double addHunger = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入饥饿度奖励(小数)"));
+            double addMood = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(小数)"));
+            double addHealth = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入健康度奖励(小数)"));
+            double addRelationship = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入亲密度奖励(小数)"));
+
+            Item item = new Item(code, name, description, false, itemType, cost, addExp, addHunger, addMood, addHealth, addRelationship, sender.getNick(), sender.getId());
+
+            EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
+
+            subject.sendMessage("物品创建成功! 物品编号: " + addItem(item) + "\n请等待审核，审核通过后将会在物品列表中显示");
         } catch (Exception e) {
-            subject.sendMessage("未知的物品类型:" + itemTypeString);
-            return;
+            subject.sendMessage("创建物品失败: " + e.getMessage());
         }
-
-        int cost = Integer.parseInt(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入物品成本(整数)"));
-        long addExp = Long.parseLong(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入经验奖励(整数)"));
-        double addHunger = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入饥饿度奖励(小数)"));
-        double addMood = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入心情奖励(小数)"));
-        double addHealth = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入健康度奖励(小数)"));
-        double addRelationship = Double.parseDouble(getNextMessage(subject, sender, message, timeout, timeUnit, "请输入亲密度奖励(小数)"));
-
-        Item item = new Item(code, name, description, false, itemType, cost, addExp, addHunger, addMood, addHealth, addRelationship, sender.getNick(), sender.getId());
-
-        EconomyUtil.plusMoneyToUser(sender, -AronaTools.petConfig.getCreateWorkshopItemMoney());
-
-        subject.sendMessage("物品创建成功! 物品编号: " + addItem(item) + "\n请等待审核，审核通过后将会在物品列表中显示");
     }
 
     /**

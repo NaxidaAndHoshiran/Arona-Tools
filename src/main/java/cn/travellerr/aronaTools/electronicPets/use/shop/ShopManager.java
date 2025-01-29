@@ -14,13 +14,14 @@ public class ShopManager {
     }
 
     public static void buyItem(Contact subject, MessageChain msg, User user, PetInfo petInfo, int itemId, int count) {
-        if (petInfo.getIsDead()) {
-            subject.sendMessage(new QuoteReply(msg).plus("宠物已死亡"));
-            return;
-        }
+
         Item item = getItem(itemId);
         if (item == null) {
             subject.sendMessage(new QuoteReply(msg).plus("物品不存在\n请发送 \"#物品列表\" 查看物品列表"));
+            return;
+        }
+        if (!item.getCode().contains("reborn") && petInfo.getIsDead()) {
+            subject.sendMessage(new QuoteReply(msg).plus("宠物已死亡"));
             return;
         }
         double totalPrice = item.getPrice() * count;
@@ -28,7 +29,14 @@ public class ShopManager {
             subject.sendMessage(new QuoteReply(msg).plus("技术点不足"));
             return;
         }
+
         petInfo.update();
+
+        if (item.getCode().contains("reborn") && petInfo.getIsDead()) {
+            petInfo.setIsDead(false);
+            petInfo.setPetHp((double) petInfo.getPetMaxHp() /2);
+        }
+
         petInfo.addPetCoin(-totalPrice);
         petInfo.addExp(item.getExp() * count);
         petInfo.addRelationship(item.getRelation() * count);

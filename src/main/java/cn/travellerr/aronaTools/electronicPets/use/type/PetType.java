@@ -110,12 +110,19 @@ public enum PetType {
 
     // Blue Archive
 
-    ALIS("爱丽丝", new String[]{"天童爱丽丝"}, 1000, 0.1, 100, "我草，盒！爱丽丝错了，爱丽丝不该在网上口嗨的！", AttributeType.MODEL),
-    HOSHINO("星野", new String[]{"小鸟游星野"}, 1000, 0.1, 100, "完全没睡到午觉耶，嘛，也没办法吧", AttributeType.EXCEPTION),
+    ALIS("天童爱丽丝", new String[]{"爱丽丝"}, 1000, 0.1, 100, "我草，盒！爱丽丝错了，爱丽丝不该在网上口嗨的！", AttributeType.MODEL),
+    HOSHINO("小鸟游星野", new String[]{"星野"}, 1000, 0.1, 100, "完全没睡到午觉耶，嘛，也没办法吧", AttributeType.EXCEPTION),
     OKIAOI("扇喜葵", new String[]{"葵", "扇喜 アオイ", "扇喜アオイ", "アオイ"}, 1000, 0.1, 100, "联邦理事会财务室主任，是凛的后辈。\n性格认真，很在意逻辑与正当性。面对越界行为时，她能严正地提出反对意见。看似不近人情，但这也是她一直以来所坚守的。\n“就算你是代理会长，这也已经越界了。” ", AttributeType.ENTITY),
     SHIROKO("砂狼白子", new String[]{"白子", "シロコ", "砂狼シロコ"}, 1000, 0.1, 100, "阿拜多斯高等学校所属，是热爱运动的阿拜多斯对策委员会的突击队长。\n虽然给人一种沉默寡言，冷若冰霜的印象，但实际上比谁都重视阿比多斯高等学院。\n为了学院的复兴可以不择手段，所以偶尔会提出一些荒唐的提案。", AttributeType.MODEL),
+    MAKI("小涂真纪", new String[]{"真纪", "兄弟"}, 1000, 0.1, 100, "真纪是千禧年科技的黑客组织——真理社的成员。她是一个喜欢涂鸦的淘气少女，真理社的徽章也是她的作品之一。由于她对任何事都持以不认真、不重视的态度，经常和别的社团起冲突", AttributeType.CODE),
+    NODOKA("天见和香", new String[]{"和香"}, 1000, 0.1, 100, "香和属于赤冬联邦学院的227号特别班。 她因为使用望远镜跟踪骚扰他人而受到处分，目前正在旧楼反省。和香喜欢用自己的双眼观察世界上有魅力的事物，即使在特别班中吃了很多苦，但她节俭到吝啬的生活习惯已经刻在了她的骨子里", AttributeType.DATA),
+    CHIHIRO("各务千寻", new String[]{"千寻"}, 1000, 0.1, 100, "她是千禧年科技学院黑客集团真理社的副社长，拥有优秀的黑客实力和天才程序员的称号。各务千寻不仅在技术上出类拔萃，还是一个行动派黑客，能够在需要时进行潜伏或追击任务", AttributeType.DATA),
+    YUUKA("早濑优香", new String[]{"优香", "100kg", "邮箱"}, 1000, 0.1, 100, "隶属于千禧年科技。是学生会【研讨会】的会计。在充斥着理系学生的千年科学学园里，也是首屈一指的数学鬼才。负责管理千年科学学园的预算部分。特长是弹算盘。在被繁杂的事务缠身的时，有弹算盘冷静下来的习惯", AttributeType.CODE),
+    KAYA("不知火花耶", new String[]{"花耶", "卡娅", "不知火卡娅"}, 1000, 0.1, 100, "联邦理事会防卫室主任，是基沃托斯各种治安工作的总负责人。下属有女武神警察学园的各部门。联邦学生会人力资源主任和体育主任支持她。", AttributeType.EXCEPTION),
+    NANAGAMI_RIN("七神凛", new String[]{"凛", "琳", "七神琳"}, 1000, 0.1, 100, "凛是联邦学生会的代理会长，负责基沃托斯全境行政的联邦理事会首席行政官。她以冷静透彻的工作态度著称，虽然这种态度让很多人感到害怕，但她本人似乎并不在意", AttributeType.PROGRAM),
 
 
+    CUSTOM("自定义", new String[]{}, 1000, 0.1, 100, "", AttributeType.NULL),
     TRAVELLERR("Travellerr", new String[]{}, 1000000, 0.01, 10000, "", AttributeType.PROGRAM),;
 
     /**
@@ -168,5 +175,14 @@ public enum PetType {
         }
         Log.error("未知的宠物: " + petType);
         return null;
+    }
+
+    public String getInfo() {
+        return "宠物种类：" + this.getPetType() + "\n"
+            + "价格：" + this.getCost() + "\n"
+            + "最大生命值：" + this.getDefaultMaxHp() + "\n"
+            + "每分钟变化：" + this.getValueChangePerMin() + "\n"
+            + "描述：" + this.getDescription() + "\n"
+            + "属性：" + this.getAttributeType().getName();
     }
 }

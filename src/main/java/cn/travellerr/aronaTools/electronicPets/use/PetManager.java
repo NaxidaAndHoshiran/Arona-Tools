@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.data.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import static cn.travellerr.aronaTools.AronaTools.petConfig;
 
@@ -158,7 +159,7 @@ public class PetManager {
     }
 
     public static void getPetList(Contact subject, int page) {
-        List<PetType> petTypes = List.of(PetType.values());
+        List<PetType> petTypes = Stream.of(PetType.values()).filter(petType -> !petType.getPetType().equals("CUSTOM")).toList();
         Bot bot = subject.getBot();
 
         ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
@@ -228,7 +229,7 @@ public class PetManager {
     }
 
     public static void searchPet(Contact subject, String petName) {
-        List<PetType> petTypeList = List.of(PetType.values());
+        List<PetType> petTypeList = Stream.of(PetType.values()).filter(petType -> !petType.getPetType().equals("CUSTOM")).toList();
         for (PetType petType : petTypeList) {
             String lowerPetName = petName.toLowerCase(Locale.ROOT);
             if (petType.toString().toLowerCase(Locale.ROOT).equals(lowerPetName) ||
